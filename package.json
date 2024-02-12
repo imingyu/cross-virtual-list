@@ -1,0 +1,76 @@
+{
+    "name": "cross-virtual-list",
+    "version": "0.0.1",
+    "description": "",
+    "main": "cjs/index.js",
+    "module": "esm/index.js",
+    "types": "esm/index.d.ts",
+    "scripts": {
+        "prepare": "husky install",
+        "lint:es": "eslint \"./packages\" \"./scripts\"",
+        "fix:es": "eslint --fix \"./packages\" \"./scripts\"",
+        "lint": "lint-staged",
+        "clear": "rimraf ./packages/*/dist && rimraf ./packages/*/node_modules",
+        "clear:dist": "rimraf ./packages/*/dist",
+        "test": "rimraf ./test-dist && tsc -p ./test/tsconfig.json && mocha ./test-dist/test/*.js ./test-dist/test/**/*.js",
+        "build:scripts": "rimraf ./scripts-dist && tsc -p ./scripts/tsconfig.json",
+        "build": "pnpm build:scripts && pnpm clear:dist && node ./scripts-dist/cli.js",
+        "build:core": "pnpm build:scripts && rimraf ./packages/core/dist && node ./scripts-dist/cli.js core"
+    },
+    "author": {
+        "name": "imingyu",
+        "email": "mingyuhisoft@163.com"
+    },
+    "dependencies": {
+        "typescript": "^5.2.2"
+    },
+    "devDependencies": {
+        "prettier": "^3.0.0",
+        "stylelint": "^15.10.2",
+        "stylelint-config-recess-order": "^4.3.0",
+        "stylelint-config-standard": "^34.0.0",
+        "stylelint-order": "^6.0.3",
+        "stylelint-scss": "^5.1.0",
+        "eslint": "^8.44.0",
+        "eslint-config-alloy": "^5.0.0",
+        "eslint-config-standard": "^17.1.0",
+        "eslint-plugin-import": "^2.27.5",
+        "eslint-plugin-n": "^16.0.1",
+        "eslint-plugin-node": "^11.1.0",
+        "eslint-plugin-promise": "^6.1.1",
+        "@typescript-eslint/eslint-plugin": "^6.0.0",
+        "@typescript-eslint/parser": "^6.0.0",
+        "husky": "^8.0.3",
+        "lint-staged": "^13.2.3",
+        "tslib": "^2.6.2",
+        "@types/chai": "^4.3.5",
+        "@types/mocha": "^10.0.6",
+        "@types/node": "^20.4.2",
+        "chai": "^4.3.7",
+        "mocha": "^10.2.0",
+        "rimraf": "^5.0.1",
+        "copy": "^0.3.2",
+        "@babel/core": "^7.22.9",
+        "@babel/preset-env": "^7.22.9",
+        "rollup": "^3.26.2",
+        "rollup-plugin-dts": "^6.1.0",
+        "@rollup/plugin-commonjs": "^25.0.2",
+        "@rollup/plugin-node-resolve": "^15.1.0",
+        "@rollup/plugin-typescript": "^11.1.6",
+        "@rollup/plugin-babel": "^6.0.3",
+        "@rollup/plugin-replace": "^5.0.2",
+        "autoprefixer": "^10.4.15",
+        "node-sass": "^9.0.0",
+        "postcss": "^8.4.27"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/imingyu/typescript-mp-component.git"
+    },
+    "keywords": [],
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/imingyu/typescript-mp-component/issues"
+    },
+    "homepage": "https://github.com/imingyu/typescript-mp-component#readme"
+}

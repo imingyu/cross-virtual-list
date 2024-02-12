@@ -1,0 +1,7 @@
+{
+    "name": "@cross-virtual-list/types",
+    "version": "0.0.1",
+    "description": "types",
+    "main": "src/index.ts",
+    "license": "MIT"
+}

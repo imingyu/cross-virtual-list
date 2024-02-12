@@ -1,0 +1,10 @@
+{
+    "name": "@cross-virtual-list/core",
+    "version": "0.0.1",
+    "description": "core",
+    "main": "./src/index.ts",
+    "license": "MIT",
+    "dependencies": {
+        "@cross-virtual-list/types": "workspace:*"
+    }
+}

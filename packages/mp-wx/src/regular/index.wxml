@@ -1,0 +1,12 @@
+<scroll-view
+    class="vl-container {{ scrollY ? 'scroll-y' : '' }} {{ scrollX && !scrollY ? 'scroll-x' : '' }}"
+    scroll-y="{{ scrollY }}"
+    scroll-x="{{ scrollX && !scrollY }}"
+    bind:scroll="onScroll"
+>
+    <view class="vl-list" style="{{ elListStyle }}">
+        <view wx:for="{{ list }}" wx:key="$vlKey" class="vl-item" style="{{ itemStyle[index] }}">
+            <item value="{{ item }}" index="{{ item.$vlIndex }}"></item>
+        </view>
+    </view>
+</scroll-view>

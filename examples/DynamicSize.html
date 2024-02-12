@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>动态高度</title>
+        <script src="../dist/umd/index.js"></script>
+        <style>
+            #app {
+                margin: 50px auto;
+                height: 580px;
+                border: 1px solid #000;
+                font-size: 14px;
+                color: #fff;
+                text-align: center;
+            }
+            .vl-container {
+                position: relative;
+            }
+            .vl-odd {
+                background-color: red;
+            }
+            .vl-even {
+                background-color: green;
+            }
+            .vl-item {
+                width: 100%;
+                height: 50px;
+                line-height: 50px;
+                vertical-align: middle;
+                position: absolute;
+                top: 0;
+                left: 0;
+                will-change: transform;
+            }
+            .vl-item img {
+                width: 40px;
+                height: 40px;
+                margin-right: 20px;
+                display: inline;
+                vertical-align: middle;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>动态高度</h1>
+        <div id="app"></div>
+        <script>
+            const _random = Math.random;
+            const _floor = Math.floor;
+            const validateArg = (min, max, needInt = false) => {
+                if (typeof max === 'undefined') {
+                    max = typeof min === 'undefined' ? 1 : min;
+                    min = 0;
+                }
+                min = min || 0;
+                return {
+                    _min: needInt ? _floor(min) : min,
+                    _max: needInt ? _floor(max) : max
+                };
+            };
+
+            /** 随机产生一个整数 */
+            const randomInt = (min, max) => {
+                const { _min, _max } = validateArg(min, max, true);
+                return _floor(_random() * (_max - _min + 1) + _min);
+            };
+
+            const [vl, render] = cvl.createDynamicSizeVirtualList('#app', {
+                viewportSize: 580,
+                itemMinSize: 50
+            })[0];
+            vl.noComputeAppend(
+                Array.from({ length: 1000 }).map((t, index) => {
+                    return {
+                        id: `vl${index + 1}`,
+                        height: randomInt(50, 80)
+                    };
+                })
+            );
+            vl.noComputeAppend({
+                id: `vl1001`,
+                height: randomInt(50, 80)
+            });
+            vl.allList.forEach((item, index) => {
+                vl.setItemSizeByIndex(index, item.height, false);
+            });
+            vl.compute();
+            render();
+            window.vl = vl;
+            window.render = render;
+        </script>
+    </body>
+</html>
