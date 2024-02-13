@@ -14,7 +14,7 @@ export class DynamicSizeVirtualList<T = any> extends BaseVirtualList<T> {
     private expectStartBufferCount = 0;
     private expectViewportShowCount = 0;
 
-    constructor(config) {
+    constructor(config: DynamicSizeVirtualListConfig) {
         super(config);
         this.setConfig(config);
     }

@@ -1,18 +1,23 @@
-import { RegularSizeVirtualList } from '@cross-virtual-list/core';
-import type {
-    MpRegularSizeVirtualListComponentProps,
-    MpRegularSizeVirtualListComponentData,
-    MpRegularSizeVirtualListComponentExports
-} from '@cross-virtual-list/types';
 import type { MpComponentProperties } from 'typescript-mp-component';
-import { MpComponent, toMpComponentConfig } from 'typescript-mp-component';
-import { getBoundingClientRect } from '../tool';
+import { MpComponentMixin } from 'typescript-mp-component';
+import type { BaseVirtualList } from '@cross-virtual-list/core';
+import type {
+    BaseVirtualListConfig,
+    MpVirtualListComponentData,
+    MpVirtualListComponentExports,
+    MpVirtualListComponentProps
+} from '@cross-virtual-list/types';
+import { getBoundingClientRect } from './tool';
 
-class MpRegularSizeVirtualListComponent<T = any> extends MpComponent<
-    MpRegularSizeVirtualListComponentData,
-    MpRegularSizeVirtualListComponentProps
-> {
-    $vl: RegularSizeVirtualList<T>;
+export class MpVirtualListComponentMixin<
+    T = any,
+    C extends BaseVirtualListConfig = BaseVirtualListConfig
+> extends MpComponentMixin<MpVirtualListComponentData, MpVirtualListComponentProps, MpVirtualListComponentMixin> {
+    $vl: BaseVirtualList<T>;
+    MixinConfig: {
+        adapter: new (config: C) => BaseVirtualList<T>;
+        adapterConfigGetter: (component: any) => Partial<C>;
+    };
     /** 已经计算好的准去的容器尺寸 */
     computedContainerSizeValue?: number;
     containerSizeComputePromise?: Promise<number>;
@@ -20,10 +25,8 @@ class MpRegularSizeVirtualListComponent<T = any> extends MpComponent<
     clearing: boolean;
     syncing: boolean;
     isAttached: boolean;
-    options = {
-        multipleSlots: true
-    };
-    properties: MpComponentProperties<MpRegularSizeVirtualListComponentProps, MpRegularSizeVirtualListComponent> = {
+
+    properties: MpComponentProperties<MpVirtualListComponentProps, MpVirtualListComponentMixin<T>> = {
         scrollX: {
             type: Boolean,
             value: false
@@ -31,12 +34,6 @@ class MpRegularSizeVirtualListComponent<T = any> extends MpComponent<
         scrollY: {
             type: Boolean,
             value: true
-        },
-        itemSize: {
-            type: Number,
-            observer() {
-                this.updateVlConfig();
-            }
         },
         contentStyle: String,
         containerSize: {
@@ -59,20 +56,29 @@ class MpRegularSizeVirtualListComponent<T = any> extends MpComponent<
         },
         itemKeyField: {
             type: null,
+            optionalTypes: [String, Array],
             observer() {
                 this.updateVlConfig();
             }
         }
     };
-    initData: MpRegularSizeVirtualListComponentData = {
+    initData: MpVirtualListComponentData = {
         elListStyle: '',
         list: []
     };
+
+    constructor(mixinConfig: {
+        adapter: new (config: C) => BaseVirtualList<T>;
+        adapterConfigGetter: (component: any) => Partial<C>;
+    }) {
+        super();
+        this.MixinConfig = mixinConfig;
+    }
+
     created() {
-        this.$vl = new RegularSizeVirtualList({
-            itemSize: this.data.itemSize || 0,
-            viewportSize: 0
-        });
+        const config = this.MixinConfig.adapterConfigGetter(this);
+        // eslint-disable-next-line new-cap
+        this.$vl = new this.MixinConfig.adapter(config as C);
         this.computeContainerSize();
         this.checkReady();
     }
@@ -96,33 +102,31 @@ class MpRegularSizeVirtualListComponent<T = any> extends MpComponent<
         );
     }
     checkReady() {
-        if (!this.isReady) {
-            if (this.data.itemSize && this.computedContainerSizeValue) {
-                this.isReady = true;
-                const comExports: MpRegularSizeVirtualListComponentExports = {
-                    clear: () => {
-                        this.clear();
-                    },
-                    setList: (val) => {
-                        this.$vl.setList(val);
-                        this.syncVlList();
-                    },
-                    appendItem: (item: T) => {
-                        this.$vl.appendItem(item);
-                        this.syncVlList();
-                    },
-                    appendItems: (items: T[]) => {
-                        this.$vl.appendItems(items);
-                        this.syncVlList();
-                    }
-                };
-                if (!this.isAttached) {
-                    wx.nextTick(() => {
-                        this.triggerEvent('ready', comExports);
-                    });
-                } else {
-                    this.triggerEvent('ready', comExports);
+        if (!this.isReady && this.computedContainerSizeValue) {
+            this.isReady = true;
+            const comExports: MpVirtualListComponentExports = {
+                clear: () => {
+                    this.clear();
+                },
+                setList: (val) => {
+                    this.$vl.setList(val);
+                    this.syncVlList();
+                },
+                appendItem: (item: T) => {
+                    this.$vl.appendItem(item);
+                    this.syncVlList();
+                },
+                appendItems: (items: T[]) => {
+                    this.$vl.appendItems(items);
+                    this.syncVlList();
                 }
+            };
+            if (!this.isAttached) {
+                wx.nextTick(() => {
+                    this.triggerEvent('ready', comExports);
+                });
+            } else {
+                this.triggerEvent('ready', comExports);
             }
         }
     }
@@ -149,8 +153,8 @@ class MpRegularSizeVirtualListComponent<T = any> extends MpComponent<
     updateVlConfig(sync = true) {
         this.$vl.setConfig(
             {
+                ...this.MixinConfig.adapterConfigGetter(this),
                 viewportSize: this.computedContainerSizeValue || 0,
-                itemSize: this.data.itemSize,
                 itemKeyField: this.data.itemKeyField
             },
             true
@@ -158,9 +162,9 @@ class MpRegularSizeVirtualListComponent<T = any> extends MpComponent<
         this.checkReady();
         sync && this.syncVlList();
     }
-    comparisonSetData(sourceData: Partial<MpRegularSizeVirtualListComponentData>) {
+    comparisonSetData(sourceData: Partial<MpVirtualListComponentData>) {
         const { elListStyle, list } = sourceData;
-        const renderData: Partial<MpRegularSizeVirtualListComponentData> = {};
+        const renderData: Partial<MpVirtualListComponentData> = {};
         let needUpdate = false;
         if (elListStyle && elListStyle !== this.data.elListStyle) {
             renderData.elListStyle = elListStyle;
@@ -240,5 +244,3 @@ class MpRegularSizeVirtualListComponent<T = any> extends MpComponent<
         this.syncVlList();
     }
 }
-
-Component(toMpComponentConfig(MpRegularSizeVirtualListComponent));

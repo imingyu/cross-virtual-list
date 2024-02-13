@@ -1,7 +1,7 @@
 {
     "navigationBarTitleText": "尺寸不变的虚拟列表示例",
     "usingComponents": {
-        "RegularSizeVirtualList": "../../vl-dist/regular/index",
+        "RegularSizeVirtualList": "../../vl-dist/components/regular/index",
         "MyRegularItem": "../../components/regular-item/index"
     }
 }

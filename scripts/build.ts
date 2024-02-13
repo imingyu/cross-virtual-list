@@ -51,7 +51,8 @@ const getMpWxBuildOptions = (): [RollupOptions, () => Promise<any>] => {
     return [
         {
             input: {
-                'regular/index': ROOT_DIR + '/packages/mp-wx/src/regular/index.ts'
+                'components/regular/index': ROOT_DIR + '/packages/mp-wx/src/components/regular/index.ts',
+                'components/dynamic/index': ROOT_DIR + '/packages/mp-wx/src/components/dynamic/index.ts'
             },
             plugins: [
                 ...getDefaultRollupPlugins(),
@@ -65,12 +66,28 @@ const getMpWxBuildOptions = (): [RollupOptions, () => Promise<any>] => {
                 {
                     format: 'cjs',
                     dir: ROOT_DIR + '/packages/mp-wx/dist/cjs',
-                    chunkFileNames: '[name].js'
+                    chunkFileNames: '[name].js',
+                    manualChunks: (id) => {
+                        if (id.includes('node_modules')) {
+                            return 'vender';
+                        }
+                        if (!id.includes('components')) {
+                            return 'common';
+                        }
+                    }
                 },
                 {
                     format: 'esm',
                     dir: ROOT_DIR + '/packages/mp-wx/dist/esm',
-                    chunkFileNames: '[name].js'
+                    chunkFileNames: '[name].js',
+                    manualChunks: (id) => {
+                        if (id.includes('node_modules')) {
+                            return 'vender';
+                        }
+                        if (!id.includes('components')) {
+                            return 'common';
+                        }
+                    }
                 }
             ]
         },

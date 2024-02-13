@@ -9,6 +9,6 @@
     "dependencies": {
         "@cross-virtual-list/core": "workspace:*",
         "@cross-virtual-list/types": "workspace:*",
-        "typescript-mp-component": "^0.0.4"
+        "typescript-mp-component": "^0.0.5"
     }
 }

@@ -93,11 +93,11 @@ importers:
     specifiers:
       '@cross-virtual-list/core': workspace:*
       '@cross-virtual-list/types': workspace:*
-      typescript-mp-component: ^0.0.4
+      typescript-mp-component: ^0.0.5
     dependencies:
       '@cross-virtual-list/core': link:../core
       '@cross-virtual-list/types': link:../types
-      typescript-mp-component: registry.npmmirror.com/typescript-mp-component/0.0.4
+      typescript-mp-component: registry.npmmirror.com/typescript-mp-component/0.0.5
 
   packages/types:
     specifiers: {}
@@ -7521,10 +7521,10 @@ packages:
       is-typed-array: registry.npmmirror.com/is-typed-array/1.1.13
     dev: true
 
-  registry.npmmirror.com/typescript-mp-component/0.0.4:
-    resolution: {integrity: sha512-VicL3bY+4fJHFtQkZ9sQQ1nLcH9XESsHRGUxTNLLxDDh5iOhOaRMmhXZEKhJWCJCzCMlzVQfEL/QuqgEra4svA==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/typescript-mp-component/-/typescript-mp-component-0.0.4.tgz}
+  registry.npmmirror.com/typescript-mp-component/0.0.5:
+    resolution: {integrity: sha512-ZpevHRjH6gZOCBEZqicjbkumfNWjOcfW++u71tBB6L4YW7PvxPwivYAXpbwkoZPwnEEYQHSsVEmxHE9uhGFJGA==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/typescript-mp-component/-/typescript-mp-component-0.0.5.tgz}
     name: typescript-mp-component
-    version: 0.0.4
+    version: 0.0.5
     dependencies:
       typescript: registry.npmmirror.com/typescript/5.3.3
     dev: false

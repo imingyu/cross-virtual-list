@@ -1,0 +1,29 @@
+.vl-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+.scroll-x {
+    display: flex;
+    .vl-item,
+    .vl-list {
+        height: 100%;
+    }
+}
+.scroll-y {
+    .vl-item {
+        width: 100%;
+    }
+}
+.vl-list {
+    flex: 1;
+    box-sizing: border-box;
+    overflow: hidden;
+    position: relative;
+}
+.vl-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    will-change: transform;
+}

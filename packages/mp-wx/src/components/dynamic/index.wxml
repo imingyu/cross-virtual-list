@@ -3,7 +3,7 @@
     bind:scroll="onScroll">
     <view class="vl-list" style="{{contentStyle}};{{ elListStyle }}">
         <view wx:for="{{ list }}" wx:key="key" class="vl-item"
-            style="transform: {{ scrollX && !scrollY ? 'translateX' : 'translateY' }}({{ item.offset }}px);{{ scrollX && !scrollY ? 'width' : 'height' }}:{{itemSize}}px;">
+            style="transform: {{ scrollX && !scrollY ? 'translateX' : 'translateY' }}({{ item.offset }}px);{{ scrollX && !scrollY ? 'width' : 'height' }}:{{itemSize?(itemSize+'px'):null}};">
             <item value="{{ item.item }}" index="{{ item.index }}" direction="{{ scrollX && !scrollY ? 'x' : 'y' }}"
                 scope="{{item.scope}}">
             </item>
