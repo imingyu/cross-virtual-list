@@ -1,5 +1,5 @@
 {
-    "pages": ["pages/index/index", "pages/regular/index"],
+    "pages": ["pages/index/index", "pages/regular/index", "pages/dynamic/index"],
     "sitemapLocation": "sitemap.json",
     "lazyCodeLoading": "requiredComponents"
 }

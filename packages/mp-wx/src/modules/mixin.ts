@@ -7,17 +7,14 @@ import type {
     MpVirtualListComponentExports,
     MpVirtualListComponentProps
 } from '@cross-virtual-list/types';
-import { getBoundingClientRect } from './tool';
+import { getBoundingClientRect, uuid } from './tool';
 
 export class MpVirtualListComponentMixin<
     T = any,
-    C extends BaseVirtualListConfig = BaseVirtualListConfig
+    C extends BaseVirtualListConfig = BaseVirtualListConfig,
+    A extends BaseVirtualList<T> = BaseVirtualList<T>
 > extends MpComponentMixin<MpVirtualListComponentData, MpVirtualListComponentProps, MpVirtualListComponentMixin> {
-    $vl: BaseVirtualList<T>;
-    MixinConfig: {
-        adapter: new (config: C) => BaseVirtualList<T>;
-        adapterConfigGetter: (component: any) => Partial<C>;
-    };
+    $vl: A;
     /** 已经计算好的准去的容器尺寸 */
     computedContainerSizeValue?: number;
     containerSizeComputePromise?: Promise<number>;
@@ -25,6 +22,8 @@ export class MpVirtualListComponentMixin<
     clearing: boolean;
     syncing: boolean;
     isAttached: boolean;
+    selfHash: string;
+    syncHash = 0;
 
     properties: MpComponentProperties<MpVirtualListComponentProps, MpVirtualListComponentMixin<T>> = {
         scrollX: {
@@ -64,18 +63,23 @@ export class MpVirtualListComponentMixin<
     };
     initData: MpVirtualListComponentData = {
         elListStyle: '',
+        selfHash: '',
         list: []
     };
 
-    constructor(mixinConfig: {
-        adapter: new (config: C) => BaseVirtualList<T>;
-        adapterConfigGetter: (component: any) => Partial<C>;
-    }) {
+    constructor(
+        public MixinConfig: {
+            adapter: new (config: C) => A;
+            adapterConfigGetter: (component: any) => Partial<C>;
+            readyExportsGetter?: (component: any) => Record<string, (...args: any[]) => any>;
+            onRenderDone?: (component: any) => void;
+        }
+    ) {
         super();
-        this.MixinConfig = mixinConfig;
     }
 
     created() {
+        this.selfHash = uuid();
         const config = this.MixinConfig.adapterConfigGetter(this);
         // eslint-disable-next-line new-cap
         this.$vl = new this.MixinConfig.adapter(config as C);
@@ -91,35 +95,38 @@ export class MpVirtualListComponentMixin<
         }
         this.clearing = true;
         this.$vl.clear(true);
-        this.setData(
+        this.fireRender(
             {
                 list: [],
-                elListStyle: ''
+                elListStyle: '',
+                selfHash: this.selfHash
             },
             () => {
                 this.clearing = false;
             }
         );
     }
+    setList(val: T[]) {
+        this.$vl.setList(val);
+        this.syncVlList();
+    }
+    appendItem(item: T) {
+        this.$vl.appendItem(item);
+        this.syncVlList();
+    }
+    appendItems(items: T[]) {
+        this.$vl.appendItems(items);
+        this.syncVlList();
+    }
     checkReady() {
         if (!this.isReady && this.computedContainerSizeValue) {
             this.isReady = true;
             const comExports: MpVirtualListComponentExports = {
-                clear: () => {
-                    this.clear();
-                },
-                setList: (val) => {
-                    this.$vl.setList(val);
-                    this.syncVlList();
-                },
-                appendItem: (item: T) => {
-                    this.$vl.appendItem(item);
-                    this.syncVlList();
-                },
-                appendItems: (items: T[]) => {
-                    this.$vl.appendItems(items);
-                    this.syncVlList();
-                }
+                clear: this.clear.bind(this),
+                setList: this.setList.bind(this),
+                appendItem: this.appendItem.bind(this),
+                appendItems: this.appendItems.bind(this),
+                ...(this.MixinConfig.readyExportsGetter?.(this) || {})
             };
             if (!this.isAttached) {
                 wx.nextTick(() => {
@@ -162,37 +169,54 @@ export class MpVirtualListComponentMixin<
         this.checkReady();
         sync && this.syncVlList();
     }
+    fireRender(data: Partial<MpVirtualListComponentData>, done?: () => void) {
+        this.setData(data, () => {
+            done?.();
+            this.MixinConfig.onRenderDone?.(this);
+        });
+    }
     comparisonSetData(sourceData: Partial<MpVirtualListComponentData>) {
-        const { elListStyle, list } = sourceData;
+        const { elListStyle, list, selfHash } = sourceData;
         const renderData: Partial<MpVirtualListComponentData> = {};
         let needUpdate = false;
-        if (elListStyle && elListStyle !== this.data.elListStyle) {
-            renderData.elListStyle = elListStyle;
+        if (elListStyle !== this.data.elListStyle) {
+            renderData.elListStyle = elListStyle || '';
+            needUpdate = true;
+        }
+        if (selfHash && selfHash !== this.data.selfHash) {
+            renderData.selfHash = selfHash || '';
             needUpdate = true;
         }
         if (list) {
             if (list.length !== this.data.list.length) {
                 renderData.list = list;
-                this.setData(renderData);
+                this.fireRender(renderData);
                 return;
             }
             const oldFirstIndex = this.data.list[0]?.index;
             const newFirstIndex = list[0]?.index;
             if (oldFirstIndex !== newFirstIndex) {
                 renderData.list = list;
-                this.setData(renderData);
+                this.fireRender(renderData);
                 return;
             }
             const oldLastIndex = this.data.list[this.data.list.length - 1]?.index;
             const newLastIndex = list[list.length - 1]?.index;
             if (oldLastIndex !== newLastIndex) {
                 renderData.list = list;
-                this.setData(renderData);
+                this.fireRender(renderData);
+                return;
+            }
+            const oldLastOffset = this.data.list[this.data.list.length - 1]?.offset;
+            const newLastOffset = list[list.length - 1]?.offset;
+            if (oldLastOffset !== newLastOffset) {
+                renderData.list = list;
+                this.fireRender(renderData);
                 return;
             }
         }
 
-        needUpdate && this.setData(renderData);
+        needUpdate && this.fireRender(renderData);
     }
     forceSyncVlList() {
         if (this.clearing) {
@@ -200,20 +224,20 @@ export class MpVirtualListComponentMixin<
         }
         const isX = this.data.scrollX && !this.data.scrollY;
         const sizeProp = isX ? 'min-width' : 'min-height';
+        this.$vl.compute();
         const elListStyle = `${sizeProp}:${this.$vl.getSize().totalSize}px;`;
         const list = this.$vl.getStartBufferList().concat(this.$vl.getShowList()).concat(this.$vl.getEndBufferList());
         this.comparisonSetData({
             elListStyle,
-            list
+            list,
+            selfHash: this.selfHash
         });
     }
     syncVlList() {
         const promise = this.computeContainerSize();
         if (!this.computedContainerSizeValue) {
             promise.then(() => {
-                if (!this.syncing) {
-                    this.syncVlList();
-                }
+                this.syncVlList();
             });
         }
 
@@ -221,6 +245,8 @@ export class MpVirtualListComponentMixin<
             this.forceSyncVlList();
             return;
         }
+        this.syncHash++;
+        const currentHash = this.syncHash;
         if (this.syncing) {
             return;
         }
@@ -229,6 +255,11 @@ export class MpVirtualListComponentMixin<
             wx.nextTick(() => {
                 this.syncing = false;
                 this.forceSyncVlList();
+                if (currentHash !== this.syncHash) {
+                    this.syncVlList();
+                } else {
+                    this.syncHash = 0;
+                }
             });
         };
         fire();

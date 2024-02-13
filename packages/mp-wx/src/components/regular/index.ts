@@ -13,7 +13,7 @@ class MpRegularSizeVirtualListComponent<T = any> extends MpComponent<
     MpRegularSizeVirtualListComponentProps
 > {
     $mx = {
-        adapter: new MpVirtualListComponentMixin<T, RegularSizeVirtualListConfig>({
+        adapter: new MpVirtualListComponentMixin<T, RegularSizeVirtualListConfig, RegularSizeVirtualList>({
             adapter: RegularSizeVirtualList,
             adapterConfigGetter: (ctx: MpRegularSizeVirtualListComponent<T>) => {
                 return {

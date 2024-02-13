@@ -58,6 +58,10 @@ export class DynamicSizeVirtualList<T = any> extends BaseVirtualList<T> {
         super.setList(list);
     }
 
+    checkItemSizeReady(itemIndex: number) {
+        return itemIndex in this.itemReadySize;
+    }
+
     setItemSizeByKey(itemKey: string | number | T, size: number, fireCompute = true) {
         const targetItem = this.findItemByKey(itemKey);
         if (targetItem) {

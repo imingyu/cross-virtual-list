@@ -10,9 +10,9 @@
             }}</button>
     </view>
     <view class="demo-vl" style="{{ item.scroll === 'x' ? 'width' : 'height' }}:{{ item.boxSize }}px;">
-        <RegularSizeVirtualList generic:item="MyRegularItem" containerSize="{{item.boxSize}}" itemSize="{{ 50 }}"
+        <DynamicSizeVirtualList generic:item="MyDynamicItem" containerSize="{{item.boxSize}}" itemMinSize="{{ 50 }}"
             contentStyle="color:red;" scrollX="{{ item.scroll === 'x' }}" scrollY="{{ item.scroll === 'y' }}"
             bind:ready="onVlReady">
-        </RegularSizeVirtualList>
+        </DynamicSizeVirtualList>
     </view>
 </view>

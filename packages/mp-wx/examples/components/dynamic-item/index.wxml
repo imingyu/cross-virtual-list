@@ -1,0 +1,5 @@
+<view class="vl-test-item direction-{{ direction }} scope-{{scope}} {{ index % 2 === 0 ? 'even' : 'odd' }}"
+    style="{{direction==='x'?'width':'height'}}:{{value.size}}px;">
+    <image class="img" src="./1.jpg" />
+    <view>{{ index }}. size={{ value.size }}</view>
+</view>

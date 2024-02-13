@@ -1,5 +1,5 @@
 <navigator class="link" url="/pages/regular/index">宽度/高度<text>不变</text>的虚拟列表示例</navigator>
-<navigator class="link" url="/pages/regular/index">宽度/高度<text>可变</text>的虚拟列表示例</navigator>
+<navigator class="link" url="/pages/dynamic/index">宽度/高度<text>可变</text>的虚拟列表示例</navigator>
 <view class="alert-warn">
     <view>
         Github: <text bindtap="copy"

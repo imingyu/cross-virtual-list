@@ -8,6 +8,13 @@
         "miniprogram": {
             "list": [
                 {
+                    "name": "pages/dynamic/index",
+                    "pathName": "pages/dynamic/index",
+                    "query": "",
+                    "launchMode": "default",
+                    "scene": null
+                },
+                {
                     "name": "pages/regular/index",
                     "pathName": "pages/regular/index",
                     "query": "",

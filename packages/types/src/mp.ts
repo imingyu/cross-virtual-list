@@ -17,6 +17,7 @@ export interface MpVirtualListComponentProps {
 export interface MpVirtualListComponentData<T = any> {
     elListStyle: string;
     list: VirtualItem<T>[];
+    selfHash: string;
 }
 
 export interface MpVirtualListComponentExports<T = any> {
@@ -31,6 +32,7 @@ export interface MpClientRect {
     height: number;
     top: number;
     left: number;
+    dataset: Record<string, any>;
 }
 
 export interface MpRegularSizeVirtualListComponentProps {
