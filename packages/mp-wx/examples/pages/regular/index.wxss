@@ -1,0 +1,36 @@
+page {
+    padding: 10px 30rpx;
+    box-sizing: border-box;
+}
+.demo-item {
+    box-sizing: border-box;
+    margin-bottom: 20px;
+    border: 1px solid #ededed;
+    font-size: 24rpx;
+    overflow: hidden;
+}
+.demo-title {
+    padding-top: 20rpx;
+    text-align: center;
+    font-size: 30rpx;
+    margin-bottom: 10rpx;
+}
+.demo-item input {
+    border: 1px solid #ededed;
+    margin-right: 10rpx;
+}
+.is-x .demo-vl {
+    height: 260rpx;
+    margin: 0 auto;
+}
+
+.demo-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid #ededed;
+    padding-bottom: 20rpx;
+}
+.demo-vl {
+    background-color: bisque;
+}

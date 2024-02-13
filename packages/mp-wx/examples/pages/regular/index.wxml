@@ -1,0 +1,16 @@
+<view wx:for="{{ demoList }}" class="demo-item is-{{ item.scroll }}" wx:key="scroll">
+    <view class="demo-title">示例{{ index + 1 }}(黄色为滚动区)</view>
+    <view class="demo-actions">
+        <view>滚动方向：{{ item.scroll === 'x' ? '横向' : '竖向' }}，</view>
+        <view>容器{{ item.scroll === 'x' ? '宽度' : '高度' }}：</view>
+        <input type="number" value="{{ item.boxSize }}" data-index="{{ index }}" bind:input="changeBoxSize"
+            bind:confirm="changeBoxSize" />
+        <view>px</view>
+    </view>
+    <view class="demo-vl" style="{{ item.scroll === 'x' ? 'width' : 'height' }}:{{ item.boxSize }}px;">
+        <RegularSizeVirtualList generic:item="MyRegularItem" containerSize="{{item.boxSize}}" itemSize="{{ 50 }}"
+            contentStyle="color:red;" scrollX="{{ item.scroll === 'x' }}" scrollY="{{ item.scroll === 'y' }}"
+            bind:ready="onVlReady">
+        </RegularSizeVirtualList>
+    </view>
+</view>

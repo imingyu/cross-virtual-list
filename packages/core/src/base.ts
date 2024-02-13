@@ -117,15 +117,15 @@ export abstract class BaseVirtualList<T = any> {
     }
 
     getShowList() {
-        return this.sliceList(this.showListBeginIndex, this.showListEndIndex);
+        return this.sliceList(this.showListBeginIndex, this.showListEndIndex, 'show');
     }
 
     getStartBufferList() {
-        return this.sliceList(this.startBufferBeginIndex, this.startBufferEndIndex);
+        return this.sliceList(this.startBufferBeginIndex, this.startBufferEndIndex, 'startBuffer');
     }
 
     getEndBufferList() {
-        return this.sliceList(this.endBufferBeginIndex, this.endBufferEndIndex);
+        return this.sliceList(this.endBufferBeginIndex, this.endBufferEndIndex, 'endBuffer');
     }
 
     getSize() {
@@ -188,17 +188,22 @@ export abstract class BaseVirtualList<T = any> {
         return res;
     }
 
-    private sliceList(startIndex: number, endIndex: number): Array<VirtualItem> {
+    private sliceList(
+        startIndex: number,
+        endIndex: number,
+        scope: 'startBuffer' | 'show' | 'endBuffer'
+    ): Array<VirtualItem<T>> {
         if (startIndex === -1) {
             return [];
         }
-        const res: Array<VirtualItem> = [];
+        const res: Array<VirtualItem<T>> = [];
         for (let i = startIndex; i <= endIndex; i++) {
             res.push({
                 item: this.allList[i],
                 index: i,
                 key: this.uniqueKey(this.allList[i], i),
-                offset: this.getItemOffsetSizeByIndex(i)
+                offset: this.getItemOffsetSizeByIndex(i),
+                scope
             });
         }
         return res;

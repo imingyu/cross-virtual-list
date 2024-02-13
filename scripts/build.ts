@@ -4,6 +4,8 @@ import typescript from '@rollup/plugin-typescript';
 import { fireRollup, getDefaultRollupPlugins } from './rp';
 import { dts } from 'rollup-plugin-dts';
 import { compilerMpResource } from './mp';
+import { copyPromise } from './fs';
+import * as rimraf from 'rimraf';
 
 const getCoreBuildOptions = (): RollupOptions[] => {
     return [
@@ -76,7 +78,13 @@ const getMpWxBuildOptions = (): [RollupOptions, () => Promise<any>] => {
             return Promise.all([
                 compilerMpResource(ROOT_DIR + '/packages/mp-wx/src', ROOT_DIR + '/packages/mp-wx/dist/cjs'),
                 compilerMpResource(ROOT_DIR + '/packages/mp-wx/src', ROOT_DIR + '/packages/mp-wx/dist/esm')
-            ]);
+            ]).then(() => {
+                rimraf.sync(ROOT_DIR + '/packages/mp-wx/examples/vl-dist');
+                return copyPromise(
+                    ROOT_DIR + '/packages/mp-wx/dist/esm/**/*.*',
+                    ROOT_DIR + '/packages/mp-wx/examples/vl-dist'
+                );
+            });
         }
     ];
 };

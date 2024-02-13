@@ -1,0 +1,12 @@
+<navigator class="link" url="/pages/regular/index">宽度/高度<text>不变</text>的虚拟列表示例</navigator>
+<navigator class="link" url="/pages/regular/index">宽度/高度<text>可变</text>的虚拟列表示例</navigator>
+<view class="alert-warn">
+    <view>
+        Github: <text bindtap="copy"
+            data-url="https://github.com/imingyu/cross-virtual-list">https://github.com/imingyu/cross-virtual-list</text>
+    </view>
+    <view>
+        NPM: <text bindtap="copy"
+            data-url="https://www.npmjs.com/package/@cross-virtual-list/mp-wx">https://www.npmjs.com/package/@cross-virtual-list/mp-wx</text>
+    </view>
+</view>

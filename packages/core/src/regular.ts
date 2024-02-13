@@ -31,17 +31,21 @@ export class RegularSizeVirtualList<T = any> extends BaseVirtualList<T> {
     setConfig(config: Partial<RegularSizeVirtualListConfig>, merge = true): void {
         super.setConfig(config, merge);
         this.expectStartBufferCount = this.expectEndBufferCount = this.viewportShowListCount = 0;
-        this.viewportShowListCount = Math.ceil(this.config.viewportSize / this.config.itemSize);
+        this.viewportShowListCount =
+            this.config.viewportSize <= 0 || this.config.itemSize <= 0
+                ? 0
+                : Math.ceil(this.config.viewportSize / this.config.itemSize);
         if (typeof this.config.startBufferCount === 'number') {
             this.expectStartBufferCount = this.config.startBufferCount;
         } else {
-            this.expectStartBufferCount = Math.ceil(this.viewportShowListCount / 2);
+            this.expectStartBufferCount =
+                this.viewportShowListCount <= 0 ? 0 : Math.ceil(this.viewportShowListCount / 2);
         }
 
         if (typeof this.config.endBufferCount === 'number') {
             this.expectEndBufferCount = this.config.endBufferCount;
         } else {
-            this.expectEndBufferCount = Math.ceil(this.viewportShowListCount / 2);
+            this.expectEndBufferCount = this.viewportShowListCount <= 0 ? 0 : Math.ceil(this.viewportShowListCount / 2);
         }
     }
 

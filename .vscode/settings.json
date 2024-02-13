@@ -7,6 +7,14 @@
         "*.wxs": "javascript",
         "*.wxml": "html"
     },
+    "[html]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "vscode.html-language-features",
+        "editor.codeActionsOnSave": {
+            "source.fixAll.eslint": "explicit",
+            "source.fixAll.stylelint": "explicit"
+        }
+    },
     "[javascript]": {
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {

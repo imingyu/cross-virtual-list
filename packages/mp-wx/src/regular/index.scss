@@ -5,7 +5,8 @@
 }
 .scroll-x {
     display: flex;
-    .vl-item {
+    .vl-item,
+    .vl-list {
         height: 100%;
     }
 }

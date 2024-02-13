@@ -11,6 +11,9 @@ export interface MpRegularSizeVirtualListComponentProps {
     containerSize?: number;
     /** 容器尺寸HASH值，当值变化时将触发显示列表索引范围的重新计算 */
     containerSizeHash?: string;
+    itemKeyField?: string | string[];
+    /** 使用总列表数量计算出的用以撑开高度/宽度的容器样式 */
+    contentStyle?: string;
 }
 
 export interface MpRegularSizeVirtualListComponentData<T = any> {

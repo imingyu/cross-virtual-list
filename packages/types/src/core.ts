@@ -41,4 +41,5 @@ export interface VirtualItem<T = any> {
     index: number;
     key: string;
     offset: number;
+    scope: 'startBuffer' | 'show' | 'endBuffer';
 }

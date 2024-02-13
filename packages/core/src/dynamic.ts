@@ -24,18 +24,23 @@ export class DynamicSizeVirtualList<T = any> extends BaseVirtualList<T> {
         this.computeDynamicTotalSize();
         this.expectStartBufferCount = this.expectEndBufferCount = this.expectViewportShowCount = 0;
 
-        this.expectViewportShowCount = Math.ceil(this.config.viewportSize / this.config.itemMinSize);
+        this.expectViewportShowCount =
+            this.config.viewportSize <= 0 || this.config.itemMinSize <= 0
+                ? 0
+                : Math.ceil(this.config.viewportSize / this.config.itemMinSize);
 
         if (typeof this.config.startBufferCount === 'number') {
             this.expectStartBufferCount = this.config.startBufferCount;
         } else {
-            this.expectStartBufferCount = Math.ceil(this.expectViewportShowCount / 2);
+            this.expectStartBufferCount =
+                this.expectViewportShowCount <= 0 ? 0 : Math.ceil(this.expectViewportShowCount / 2);
         }
 
         if (typeof this.config.endBufferCount === 'number') {
             this.expectEndBufferCount = this.config.endBufferCount;
         } else {
-            this.expectEndBufferCount = Math.ceil(this.expectViewportShowCount / 2);
+            this.expectEndBufferCount =
+                this.expectViewportShowCount <= 0 ? 0 : Math.ceil(this.expectViewportShowCount / 2);
         }
     }
 

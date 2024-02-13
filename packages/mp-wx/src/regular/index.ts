@@ -2,9 +2,9 @@ import { RegularSizeVirtualList } from '@cross-virtual-list/core';
 import type {
     MpRegularSizeVirtualListComponentProps,
     MpRegularSizeVirtualListComponentData,
-    RegularSizeVirtualListConfig,
     MpRegularSizeVirtualListComponentExports
 } from '@cross-virtual-list/types';
+import type { MpComponentProperties } from 'typescript-mp-component';
 import { MpComponent, toMpComponentConfig } from 'typescript-mp-component';
 import { getBoundingClientRect } from '../tool';
 
@@ -14,15 +14,16 @@ class MpRegularSizeVirtualListComponent<T = any> extends MpComponent<
 > {
     $vl: RegularSizeVirtualList<T>;
     /** 已经计算好的准去的容器尺寸 */
-    computedContainerSize?: number;
+    computedContainerSizeValue?: number;
     containerSizeComputePromise?: Promise<number>;
     isReady: boolean;
     clearing: boolean;
     syncing: boolean;
+    isAttached: boolean;
     options = {
         multipleSlots: true
     };
-    properties = {
+    properties: MpComponentProperties<MpRegularSizeVirtualListComponentProps, MpRegularSizeVirtualListComponent> = {
         scrollX: {
             type: Boolean,
             value: false
@@ -33,24 +34,33 @@ class MpRegularSizeVirtualListComponent<T = any> extends MpComponent<
         },
         itemSize: {
             type: Number,
-            observer(val: number) {
-                this.updateVlConfig({
-                    itemSize: val
-                });
+            observer() {
+                this.updateVlConfig();
             }
         },
+        contentStyle: String,
         containerSize: {
             type: Number,
             observer() {
-                delete this.computedContainerSize;
-                this.syncVlList();
+                delete this.computedContainerSizeValue;
+                this.computeContainerSize();
+                this.updateVlConfig();
             }
         },
         containerSizeHash: {
             type: String,
             observer() {
-                delete this.computedContainerSize;
+                delete this.computedContainerSizeValue;
+                delete this.containerSizeComputePromise;
+                this.computeContainerSize();
+                this.updateVlConfig(false);
                 this.syncVlList();
+            }
+        },
+        itemKeyField: {
+            type: null,
+            observer() {
+                this.updateVlConfig();
             }
         }
     };
@@ -63,8 +73,11 @@ class MpRegularSizeVirtualListComponent<T = any> extends MpComponent<
             itemSize: this.data.itemSize || 0,
             viewportSize: 0
         });
-        this.computeContainerHeight();
+        this.computeContainerSize();
         this.checkReady();
+    }
+    attached() {
+        this.isAttached = true;
     }
     clear() {
         if (this.clearing) {
@@ -84,7 +97,7 @@ class MpRegularSizeVirtualListComponent<T = any> extends MpComponent<
     }
     checkReady() {
         if (!this.isReady) {
-            if (this.data.itemSize && this.computedContainerSize) {
+            if (this.data.itemSize && this.computedContainerSizeValue) {
                 this.isReady = true;
                 const comExports: MpRegularSizeVirtualListComponentExports = {
                     clear: () => {
@@ -103,42 +116,45 @@ class MpRegularSizeVirtualListComponent<T = any> extends MpComponent<
                         this.syncVlList();
                     }
                 };
-                this.triggerEvent('ready', comExports);
+                if (!this.isAttached) {
+                    wx.nextTick(() => {
+                        this.triggerEvent('ready', comExports);
+                    });
+                } else {
+                    this.triggerEvent('ready', comExports);
+                }
             }
         }
     }
-    computeContainerHeight(): Promise<number> {
-        if (this.computedContainerSize) {
+    computeContainerSize(): Promise<number> {
+        if (this.computedContainerSizeValue) {
             return this.containerSizeComputePromise as Promise<number>;
         }
         if (typeof this.data.containerSize === 'number' && this.data.containerSize > 0) {
-            this.computedContainerSize = this.data.containerSize;
-            this.containerSizeComputePromise = Promise.resolve(this.computedContainerSize);
-            this.updateVlConfig(
-                {
-                    viewportSize: this.computedContainerSize
-                },
-                false
-            );
+            this.computedContainerSizeValue = this.data.containerSize;
+            this.containerSizeComputePromise = Promise.resolve(this.computedContainerSizeValue);
+            this.updateVlConfig(false);
             return this.containerSizeComputePromise;
         }
         if (!this.containerSizeComputePromise) {
             this.containerSizeComputePromise = getBoundingClientRect(this, '.vl-container').then((res) => {
-                this.computedContainerSize =
+                this.computedContainerSizeValue =
                     res[this.data.scrollY ? 'height' : this.data.scrollX && !this.data.scrollY ? 'height' : 'width'];
-                this.updateVlConfig(
-                    {
-                        viewportSize: this.computedContainerSize
-                    },
-                    false
-                );
-                return this.computedContainerSize;
+                this.updateVlConfig(false);
+                return this.computedContainerSizeValue;
             });
         }
         return this.containerSizeComputePromise;
     }
-    updateVlConfig(config: Partial<RegularSizeVirtualListConfig>, sync = true) {
-        this.$vl.setConfig(config, true);
+    updateVlConfig(sync = true) {
+        this.$vl.setConfig(
+            {
+                viewportSize: this.computedContainerSizeValue || 0,
+                itemSize: this.data.itemSize,
+                itemKeyField: this.data.itemKeyField
+            },
+            true
+        );
         this.checkReady();
         sync && this.syncVlList();
     }
@@ -188,7 +204,15 @@ class MpRegularSizeVirtualListComponent<T = any> extends MpComponent<
         });
     }
     syncVlList() {
-        this.computeContainerHeight();
+        const promise = this.computeContainerSize();
+        if (!this.computedContainerSizeValue) {
+            promise.then(() => {
+                if (!this.syncing) {
+                    this.syncVlList();
+                }
+            });
+        }
+
         if (!this.data.list.length) {
             this.forceSyncVlList();
             return;
