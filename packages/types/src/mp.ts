@@ -1,3 +1,5 @@
+import type { VirtualItem } from './core';
+
 export interface MpRegularSizeVirtualListComponentProps {
     /** 允许横向滚动，不可与scrollY同时设置为true，如果都为true时将优先以scrollY为准 */
     scrollX: boolean;
@@ -11,10 +13,9 @@ export interface MpRegularSizeVirtualListComponentProps {
     containerSizeHash?: string;
 }
 
-export interface MpRegularSizeVirtualListComponentData<T extends object = any> {
+export interface MpRegularSizeVirtualListComponentData<T = any> {
     elListStyle: string;
-    itemStyle: string[];
-    list: T[];
+    list: VirtualItem<T>[];
 }
 
 export interface MpVirtualListItemReplacer<T extends object = any> {
@@ -30,8 +31,9 @@ export interface MpVirtualListItemReplacer<T extends object = any> {
 export interface MpRegularSizeVirtualListComponentExports<T extends object = any> {
     clear: () => void;
     setList: (val: T[]) => void;
-    append: (...items: Array<T | T[]>) => void;
-    replace: MpVirtualListItemReplacer<T>;
+    appendItem: (item: T) => void;
+    appendItems: (items: T[]) => void;
+    // replace: MpVirtualListItemReplacer<T>;
 }
 
 export interface MpClientRect {

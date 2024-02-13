@@ -5,8 +5,13 @@
     bind:scroll="onScroll"
 >
     <view class="vl-list" style="{{ elListStyle }}">
-        <view wx:for="{{ list }}" wx:key="$vlKey" class="vl-item" style="{{ itemStyle[index] }}">
-            <item value="{{ item }}" index="{{ item.$vlIndex }}"></item>
+        <view
+            wx:for="{{ list }}"
+            wx:key="key"
+            class="vl-item"
+            style="transform: {{ scrollX && !scrollY ? 'translateX(' : 'translateY(' }}{{ item.offset + 'px)' }}"
+        >
+            <item value="{{ item.item }}" index="{{ item.index }}"></item>
         </view>
     </view>
 </scroll-view>

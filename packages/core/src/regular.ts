@@ -9,14 +9,15 @@
 import { BaseVirtualList } from './base';
 import type { RegularSizeVirtualListConfig, VirtualListRange } from '@cross-virtual-list/types';
 
-export class RegularSizeVirtualList<T extends object = any> extends BaseVirtualList<T, RegularSizeVirtualListConfig> {
+export class RegularSizeVirtualList<T = any> extends BaseVirtualList<T> {
+    declare config: RegularSizeVirtualListConfig;
     /** 预计的后置缓冲区列表项数量 */
     private expectEndBufferCount = 0;
     /** 预计的前置缓冲区列表项数量 */
     private expectStartBufferCount = 0;
     private viewportShowListCount = 0;
 
-    constructor(config: RegularSizeVirtualListConfig<T>) {
+    constructor(config: RegularSizeVirtualListConfig) {
         super(config);
         this.setConfig(config);
     }
@@ -27,7 +28,7 @@ export class RegularSizeVirtualList<T extends object = any> extends BaseVirtualL
         this.setConfig(this.config);
     }
 
-    setConfig(config: Partial<RegularSizeVirtualListConfig<T>>, merge = true): void {
+    setConfig(config: Partial<RegularSizeVirtualListConfig>, merge = true): void {
         super.setConfig(config, merge);
         this.expectStartBufferCount = this.expectEndBufferCount = this.viewportShowListCount = 0;
         this.viewportShowListCount = Math.ceil(this.config.viewportSize / this.config.itemSize);
@@ -44,22 +45,7 @@ export class RegularSizeVirtualList<T extends object = any> extends BaseVirtualL
         }
     }
 
-    getItemOffsetSizeByKey(keyOrItemSelf: string | number | T) {
-        const [, index] = this.findItemByKey(keyOrItemSelf) || [];
-        if (index === undefined) {
-            return 0;
-        }
-        return this.config.itemSize * index;
-    }
-
-    getItemOffsetSizeByIndex(indexOrItemSelf: number | T) {
-        if (typeof indexOrItemSelf === 'number') {
-            return this.config.itemSize * indexOrItemSelf;
-        }
-        const [, index] = this.findItemByKey(indexOrItemSelf) || [];
-        if (index === undefined) {
-            return 0;
-        }
+    getItemOffsetSizeByIndex(index: number) {
         return this.config.itemSize * index;
     }
 

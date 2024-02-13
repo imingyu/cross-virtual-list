@@ -1,15 +1,12 @@
 import { BaseVirtualList } from './base';
 import type { DynamicSizeVirtualListConfig, VirtualListRange } from '@cross-virtual-list/types';
 
-export class DynamicSizeVirtualList<T extends object = any> extends BaseVirtualList<
-    T,
-    DynamicSizeVirtualListConfig<T>
-> {
+export class DynamicSizeVirtualList<T = any> extends BaseVirtualList<T> {
+    declare config: DynamicSizeVirtualListConfig;
     private dynamicTotalSize = 0;
-    private itemDynamicSize: Record<number, number> = {};
-    private itemSizeReadyIndex: Record<number, 1> = {};
+    private itemReadySize: Record<number, number> = {};
     private itemSizeReadyCount = 0;
-    private totalReadyItemSize = 0;
+    private itemReadyTotalSize = 0;
     private itemSizeSum: number[] = [];
     /** 预计的后置缓冲区列表项数量 */
     private expectEndBufferCount = 0;
@@ -22,12 +19,7 @@ export class DynamicSizeVirtualList<T extends object = any> extends BaseVirtualL
         this.setConfig(config);
     }
 
-    append(...items: (T | T[])[]) {
-        super.append(...items);
-        this.computeDynamicTotalSize();
-    }
-
-    setConfig(config: Partial<DynamicSizeVirtualListConfig<T>>, merge = true) {
+    setConfig(config: Partial<DynamicSizeVirtualListConfig>, merge = true) {
         super.setConfig(config, merge);
         this.computeDynamicTotalSize();
         this.expectStartBufferCount = this.expectEndBufferCount = this.expectViewportShowCount = 0;
@@ -49,9 +41,8 @@ export class DynamicSizeVirtualList<T extends object = any> extends BaseVirtualL
 
     clear(fireCompute = true) {
         super.clear(fireCompute);
-        this.itemSizeReadyCount = this.totalReadyItemSize = this.dynamicTotalSize = 0;
-        this.itemSizeReadyIndex = {};
-        this.itemDynamicSize = {};
+        this.itemSizeReadyCount = this.itemReadyTotalSize = this.dynamicTotalSize = 0;
+        this.itemReadySize = {};
         this.itemSizeSum = [];
         this.expectStartBufferCount = this.expectEndBufferCount = this.expectViewportShowCount = 0;
         this.setConfig(this.config);
@@ -69,37 +60,36 @@ export class DynamicSizeVirtualList<T extends object = any> extends BaseVirtualL
         }
     }
     setItemSizeByIndex(itemIndex: number, size: number, fireCompute = true) {
-        this.itemDynamicSize[itemIndex] = size;
-        if (!(itemIndex in this.itemSizeReadyIndex)) {
-            this.itemSizeReadyIndex[itemIndex] = 1;
-            this.itemDynamicSize[itemIndex] = size;
+        if (!(itemIndex in this.itemReadySize)) {
+            this.itemReadySize[itemIndex] = size;
             this.itemSizeReadyCount++;
-            this.totalReadyItemSize += size;
+            this.itemReadyTotalSize += size;
+        } else {
+            const oldSize = this.itemReadySize[itemIndex];
+            this.itemReadySize[itemIndex] = size;
+            this.itemReadyTotalSize -= oldSize;
+            this.itemReadyTotalSize += size;
         }
+        this.computeDynamicTotalSize();
         if (fireCompute) {
             this.computeItemSizeSum(itemIndex);
             this.compute();
         }
     }
 
-    getItemSize(item: T, index: number): number {
-        return this.itemDynamicSize[index] || this.config.itemMinSize;
-    }
-
-    getItemOffsetSizeByKey(keyOrItemSelf: string | number | T) {
-        const [, index] = this.findItemByKey(keyOrItemSelf) || [];
-        return this.getItemOffsetByIndex(index);
-    }
-
-    getItemOffsetSizeByIndex(indexOrItemSelf: number | T) {
-        if (typeof indexOrItemSelf === 'number') {
-            return this.getItemOffsetByIndex(indexOrItemSelf);
+    getItemOffsetSizeByIndex(index: number) {
+        if (!index) {
+            return 0;
         }
-        return this.getItemOffsetSizeByKey(indexOrItemSelf);
+        this.computeItemSizeSum(0, index);
+        return !index ? 0 : this.itemSizeSum[index] - this.getItemSize(index);
     }
 
     protected getTotalSize(): number {
-        return this.computeDynamicTotalSize();
+        if (!this.dynamicTotalSize) {
+            return this.computeDynamicTotalSize();
+        }
+        return this.dynamicTotalSize;
     }
 
     protected computeRange(): VirtualListRange {
@@ -118,12 +108,8 @@ export class DynamicSizeVirtualList<T extends object = any> extends BaseVirtualL
         };
     }
 
-    private getItemOffsetByIndex(index?: number) {
-        if (!index) {
-            return 0;
-        }
-        this.computeItemSizeSum(0, index);
-        return !index ? 0 : this.itemSizeSum[index] - this.getItemSize(this.allList[index], index);
+    private getItemSize(index: number): number {
+        return this.itemReadySize[index] || this.config.itemMinSize;
     }
 
     /** 计算视口显示列表项索引范围 */
@@ -156,7 +142,7 @@ export class DynamicSizeVirtualList<T extends object = any> extends BaseVirtualL
         let readySize = 0;
         let showListEndIndex = showListBeginIndex;
         while (true) {
-            readySize += this.getItemSize(this.allList[showListEndIndex], showListEndIndex);
+            readySize += this.getItemSize(showListEndIndex);
             if (readySize >= viewportSize) {
                 break;
             }
@@ -186,7 +172,7 @@ export class DynamicSizeVirtualList<T extends object = any> extends BaseVirtualL
         let readyStartBufferSize = 0;
 
         while (true) {
-            const itemSize = this.getItemSize(this.allList[startBufferBeginIndex], startBufferBeginIndex);
+            const itemSize = this.getItemSize(startBufferBeginIndex);
             readyStartBufferSize += itemSize;
             startBufferBeginIndex--;
             readyStartBufferCount++;
@@ -222,8 +208,7 @@ export class DynamicSizeVirtualList<T extends object = any> extends BaseVirtualL
         startIndex = startIndex === undefined ? 0 : startIndex;
         stopIndex = stopIndex === undefined ? this.allList.length - 1 : stopIndex;
         for (let i = startIndex; i <= stopIndex; i++) {
-            const item = this.allList[i];
-            const currentSize = this.getItemSize(item, i);
+            const currentSize = this.getItemSize(i);
             let beforeSize;
             if (i === 0) {
                 beforeSize = 0;
@@ -238,48 +223,13 @@ export class DynamicSizeVirtualList<T extends object = any> extends BaseVirtualL
         }
     }
 
-    private computeScrollInsideRange() {
-        const { nowScrollStartSize } = this;
-        if (nowScrollStartSize <= 0) {
-            return [0, this.expectViewportShowCount - 1];
-        }
-
-        // 使用二分查找，结合最小尺寸找到离滚动值所处的大致列表索引区间
-        const insideRange: [number, number] = [0, Math.ceil(this.allList.length / 2)];
-        const totalSize = this.getTotalSize();
-        let currentHalfSize = totalSize / 2;
-        let currentHalfIsGreater = currentHalfSize > nowScrollStartSize; // 当前的二分索引计算出的高度是否大于滚动值
-        while (true) {
-            if (currentHalfIsGreater) {
-                // 向前继续二分
-                insideRange[0] = insideRange[1];
-                insideRange[1] = Math.ceil(insideRange[1] / 2);
-                currentHalfSize = currentHalfSize / 2;
-                currentHalfIsGreater = currentHalfSize > nowScrollStartSize;
-                if (!currentHalfIsGreater) {
-                    break;
-                }
-                continue;
-            }
-            // 向后继续二分
-            insideRange[0] = insideRange[1];
-            insideRange[1] += Math.ceil(insideRange[1] / 2);
-            currentHalfSize += currentHalfSize / 2;
-            currentHalfIsGreater = currentHalfSize > nowScrollStartSize;
-            if (currentHalfIsGreater) {
-                break;
-            }
-        }
-        return insideRange.sort((a, b) => a - b);
-    }
-
     private computeDynamicTotalSize() {
         if (this.allList.length && !this.dynamicTotalSize) {
             this.dynamicTotalSize = this.allList.length * this.config.itemMinSize;
             return this.dynamicTotalSize;
         }
         this.dynamicTotalSize =
-            this.totalReadyItemSize + (this.allList.length - this.itemSizeReadyCount) * this.config.itemMinSize;
+            this.itemReadyTotalSize + (this.allList.length - this.itemSizeReadyCount) * this.config.itemMinSize;
         return this.dynamicTotalSize;
     }
 }

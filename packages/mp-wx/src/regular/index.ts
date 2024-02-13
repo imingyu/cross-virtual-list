@@ -8,7 +8,7 @@ import type {
 import { MpComponent, toMpComponentConfig } from 'typescript-mp-component';
 import { getBoundingClientRect } from '../tool';
 
-class MpRegularSizeVirtualListComponent<T extends object = any> extends MpComponent<
+class MpRegularSizeVirtualListComponent<T = any> extends MpComponent<
     MpRegularSizeVirtualListComponentData,
     MpRegularSizeVirtualListComponentProps
 > {
@@ -56,13 +56,11 @@ class MpRegularSizeVirtualListComponent<T extends object = any> extends MpCompon
     };
     initData: MpRegularSizeVirtualListComponentData = {
         elListStyle: '',
-        itemStyle: [],
         list: []
     };
     created() {
         this.$vl = new RegularSizeVirtualList({
             itemSize: this.data.itemSize || 0,
-            itemNeedIndex: true,
             viewportSize: 0
         });
         this.computeContainerHeight();
@@ -77,8 +75,7 @@ class MpRegularSizeVirtualListComponent<T extends object = any> extends MpCompon
         this.setData(
             {
                 list: [],
-                elListStyle: '',
-                itemStyle: []
+                elListStyle: ''
             },
             () => {
                 this.clearing = false;
@@ -97,13 +94,12 @@ class MpRegularSizeVirtualListComponent<T extends object = any> extends MpCompon
                         this.$vl.setList(val);
                         this.syncVlList();
                     },
-                    append: (...items: Array<T | T[]>) => {
-                        this.$vl.append(...items);
+                    appendItem: (item: T) => {
+                        this.$vl.appendItem(item);
                         this.syncVlList();
                     },
-                    replace: (...args: any[]) => {
-                        // eslint-disable-next-line prefer-spread
-                        this.$vl.replace.apply(this.$vl, args);
+                    appendItems: (items: T[]) => {
+                        this.$vl.appendItems(items);
                         this.syncVlList();
                     }
                 };
@@ -146,21 +142,48 @@ class MpRegularSizeVirtualListComponent<T extends object = any> extends MpCompon
         this.checkReady();
         sync && this.syncVlList();
     }
+    comparisonSetData(sourceData: Partial<MpRegularSizeVirtualListComponentData>) {
+        const { elListStyle, list } = sourceData;
+        const renderData: Partial<MpRegularSizeVirtualListComponentData> = {};
+        let needUpdate = false;
+        if (elListStyle && elListStyle !== this.data.elListStyle) {
+            renderData.elListStyle = elListStyle;
+            needUpdate = true;
+        }
+        if (list) {
+            if (list.length !== this.data.list.length) {
+                renderData.list = list;
+                this.setData(renderData);
+                return;
+            }
+            const oldFirstIndex = this.data.list[0]?.index;
+            const newFirstIndex = list[0]?.index;
+            if (oldFirstIndex !== newFirstIndex) {
+                renderData.list = list;
+                this.setData(renderData);
+                return;
+            }
+            const oldLastIndex = this.data.list[this.data.list.length - 1]?.index;
+            const newLastIndex = list[list.length - 1]?.index;
+            if (oldLastIndex !== newLastIndex) {
+                renderData.list = list;
+                this.setData(renderData);
+                return;
+            }
+        }
+
+        needUpdate && this.setData(renderData);
+    }
     forceSyncVlList() {
         if (this.clearing) {
             return;
         }
         const isX = this.data.scrollX && !this.data.scrollY;
         const sizeProp = isX ? 'min-width' : 'min-height';
-        const transformProp = isX ? 'translateX' : 'translateY';
         const elListStyle = `${sizeProp}:${this.$vl.getSize().totalSize}px;`;
         const list = this.$vl.getStartBufferList().concat(this.$vl.getShowList()).concat(this.$vl.getEndBufferList());
-        const itemStyle = list.map((item) => {
-            return `transform:${transformProp}(${this.$vl.getItemOffsetSizeByKey(item)}px);`;
-        });
-        this.setData({
+        this.comparisonSetData({
             elListStyle,
-            itemStyle,
             list
         });
     }
