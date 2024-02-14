@@ -1,7 +1,21 @@
 {
     "name": "@cross-virtual-list/types",
     "version": "0.0.1",
-    "description": "types",
-    "main": "src/index.ts",
-    "license": "MIT"
+    "description": "跨平台虚拟列表组件types",
+    "main": "dist/index.d.ts",
+    "types": "src/index.ts",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/imingyu/cross-virtual-list.git"
+    },
+    "keywords": [],
+    "author": {
+        "name": "imingyu",
+        "email": "mingyuhisoft@163.com"
+    },
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/imingyu/cross-virtual-list/issues"
+    },
+    "homepage": "https://github.com/imingyu/cross-virtual-list#readme"
 }

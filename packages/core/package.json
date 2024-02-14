@@ -1,10 +1,36 @@
 {
     "name": "@cross-virtual-list/core",
     "version": "0.0.1",
-    "description": "core",
+    "description": "跨平台虚拟列表组件的核心抽象封装",
     "main": "./src/index.ts",
-    "license": "MIT",
+    "publishConfig": {
+        "main": "./dist/esm/index.js",
+        "module": "./dist/esm/index.js",
+        "exports": "./dist/esm/index.js",
+        "browser": "./dist/umd/index.js",
+        "unpkg": "./dist/umd/index.js",
+        "types": "./dist/esm/index.d.ts"
+    },
     "dependencies": {
         "@cross-virtual-list/types": "workspace:*"
-    }
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/imingyu/cross-virtual-list.git"
+    },
+    "keywords": [
+        "virtual-list",
+        "虚拟列表",
+        "big-data",
+        "跨平台"
+    ],
+    "author": {
+        "name": "imingyu",
+        "email": "mingyuhisoft@163.com"
+    },
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/imingyu/cross-virtual-list/issues"
+    },
+    "homepage": "https://github.com/imingyu/cross-virtual-list#readme"
 }

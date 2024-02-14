@@ -1,14 +1,32 @@
 {
     "name": "@cross-virtual-list/mp-wx",
     "version": "0.0.1",
-    "description": "core",
-    "main": "./dist/cjs/index.js",
-    "module": "./dist/esm/index.js",
-    "types": "./dist/esm/index.d.ts",
-    "license": "MIT",
+    "description": "适用于微信小程序的虚拟列表组件，支持横向/竖向滚动，支持列表项尺寸可变/不变等功能。",
+    "miniprogram": "dist",
     "dependencies": {
         "@cross-virtual-list/core": "workspace:*",
         "@cross-virtual-list/types": "workspace:*",
         "typescript-mp-component": "^0.0.5"
-    }
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/imingyu/cross-virtual-list.git"
+    },
+    "keywords": [
+        "小程序虚拟列表",
+        "mp-virtual-list",
+        "virtual-list",
+        "虚拟列表",
+        "小程序",
+        "big-data"
+    ],
+    "author": {
+        "name": "imingyu",
+        "email": "mingyuhisoft@163.com"
+    },
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/imingyu/cross-virtual-list/issues"
+    },
+    "homepage": "https://github.com/imingyu/cross-virtual-list#readme"
 }

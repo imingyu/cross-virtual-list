@@ -1,10 +1,22 @@
 {
     "name": "cross-virtual-list",
     "version": "0.0.1",
-    "description": "",
-    "main": "cjs/index.js",
-    "module": "esm/index.js",
-    "types": "esm/index.d.ts",
+    "description": "跨平台、跨框架的虚拟列表组件",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/imingyu/cross-virtual-list.git"
+    },
+    "keywords": [],
+    "author": {
+        "name": "imingyu",
+        "email": "mingyuhisoft@163.com"
+    },
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/imingyu/cross-virtual-list/issues"
+    },
+    "homepage": "https://github.com/imingyu/cross-virtual-list#readme",
+    "private": true,
     "scripts": {
         "prepare": "husky install",
         "lint:es": "eslint \"./packages\" \"./scripts\"",
@@ -16,10 +28,6 @@
         "build:scripts": "rimraf ./scripts-dist && tsc -p ./scripts/tsconfig.json",
         "build": "pnpm build:scripts && pnpm clear:dist && node ./scripts-dist/cli.js",
         "build:core": "pnpm build:scripts && rimraf ./packages/core/dist && node ./scripts-dist/cli.js core"
-    },
-    "author": {
-        "name": "imingyu",
-        "email": "mingyuhisoft@163.com"
     },
     "dependencies": {
         "typescript": "^5.2.2"
@@ -62,15 +70,5 @@
         "autoprefixer": "^10.4.15",
         "node-sass": "^9.0.0",
         "postcss": "^8.4.27"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/imingyu/typescript-mp-component.git"
-    },
-    "keywords": [],
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/imingyu/typescript-mp-component/issues"
-    },
-    "homepage": "https://github.com/imingyu/typescript-mp-component#readme"
+    }
 }
