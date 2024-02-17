@@ -11,7 +11,7 @@ oneByOne(
             const json = JSON.parse(readFile(name).trim());
             json.version = version;
             writeFile(name, JSON.stringify(json, null, 4));
-            return runCommand(`cd ${dir} && pnpm publish`);
+            return runCommand(`cd ${dir} && pnpm publish --no-git-checks`);
         };
     }),
     true
