@@ -35,7 +35,6 @@
     "devDependencies": {
         "@babel/core": "^7.22.9",
         "@babel/preset-env": "^7.22.9",
-        "@changesets/cli": "^2.27.1",
         "@rollup/plugin-babel": "^6.0.3",
         "@rollup/plugin-commonjs": "^25.0.2",
         "@rollup/plugin-node-resolve": "^15.1.0",
