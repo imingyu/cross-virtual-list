@@ -5,6 +5,7 @@
     "access": "public",
     "main": "./src/index.ts",
     "publishConfig": {
+        "access": "public",
         "main": "./dist/index.d.ts",
         "types": "./dist/index.d.ts"
     },
