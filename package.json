@@ -1,6 +1,6 @@
 {
     "name": "cross-virtual-list",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "跨平台、跨框架的虚拟列表组件",
     "repository": {
         "type": "git",
@@ -27,7 +27,8 @@
         "test": "rimraf ./test-dist && tsc -p ./test/tsconfig.json && mocha ./test-dist/test/*.js ./test-dist/test/**/*.js",
         "build:scripts": "rimraf ./scripts-dist && tsc -p ./scripts/tsconfig.json",
         "build": "pnpm build:scripts && pnpm clear:dist && node ./scripts-dist/cli.js",
-        "build:core": "pnpm build:scripts && rimraf ./packages/core/dist && node ./scripts-dist/cli.js core"
+        "build:core": "pnpm build:scripts && rimraf ./packages/core/dist && node ./scripts-dist/cli.js core",
+        "pub": "pnpm build:scripts && node ./scripts-dist/pub.js"
     },
     "dependencies": {
         "typescript": "^5.2.2"

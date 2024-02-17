@@ -30,7 +30,7 @@ const getCoreBuildOptions = (): RollupOptions[] => {
                 },
                 {
                     format: 'umd',
-                    file: ROOT_DIR + '/packages/core/dist/esm/index.js',
+                    file: ROOT_DIR + '/packages/core/dist/umd/index.js',
                     name: 'CrossVirtualList'
                 }
             ]
