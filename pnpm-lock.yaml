@@ -139,8 +139,8 @@ importers:
         specifier: workspace:*
         version: link:../types
       typescript-mp-component:
-        specifier: ^0.0.5
-        version: 0.0.5
+        specifier: 0.1.1
+        version: 0.1.1
 
   packages/types: {}
 
@@ -5990,10 +5990,8 @@ packages:
       is-typed-array: 1.1.13
     dev: true
 
-  /typescript-mp-component@0.0.5:
-    resolution: {integrity: sha512-ZpevHRjH6gZOCBEZqicjbkumfNWjOcfW++u71tBB6L4YW7PvxPwivYAXpbwkoZPwnEEYQHSsVEmxHE9uhGFJGA==}
-    dependencies:
-      typescript: 5.3.3
+  /typescript-mp-component@0.1.1:
+    resolution: {integrity: sha512-LTGk+ba/vrV/ouPEpkprTAvxq6+WOSTObN4Ndp8Ib2TazjYe5Nli/gQP//I34F4gc2QxKVnpiSguFaGZoTztsQ==}
     dev: false
 
   /typescript@5.3.3:

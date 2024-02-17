@@ -1,6 +1,6 @@
 {
     "name": "@cross-virtual-list/core",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "跨平台虚拟列表组件的核心抽象封装",
     "main": "./src/index.ts",
     "publishConfig": {
