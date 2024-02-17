@@ -29,7 +29,11 @@ export abstract class BaseVirtualList<T = any> {
     protected showListEndIndex = -1;
     protected itemKeyComputer?: VirtualItemKeyFieldComputer<T>;
     protected keyMark: Record<string, 1> = {};
-    private uuid = 0;
+    protected uuid = 0;
+    protected cacheSafe = false;
+    protected itemMapKey = new Map<T, any>();
+    protected keyMapIndex: Record<string | number, number> = {};
+    protected indexMapKey: Array<string | number> = [];
 
     constructor(config: BaseVirtualListConfig) {
         this.setConfig(config);
@@ -46,6 +50,10 @@ export abstract class BaseVirtualList<T = any> {
         }
         const newItemKeyField = JSON.stringify(this.config.itemKeyField);
         if (newItemKeyField !== oldItemKeyField || !this.itemKeyComputer) {
+            this.itemMapKey = new Map();
+            this.keyMapIndex = {};
+            this.indexMapKey = [];
+
             delete this.itemKeyComputer;
             const { itemKeyField } = this.config;
             let finalItemKeyField = itemKeyField || 'id';
@@ -56,6 +64,13 @@ export abstract class BaseVirtualList<T = any> {
                 } else {
                     keyFieldIsArr = true;
                 }
+            }
+            if (typeof finalItemKeyField === 'string') {
+                this.cacheSafe = !!finalItemKeyField;
+            } else if (Array.isArray(finalItemKeyField)) {
+                this.cacheSafe = !!finalItemKeyField.length;
+            } else {
+                this.cacheSafe = false;
             }
             this.itemKeyComputer = (item: T): any => {
                 if (typeof item === 'object' && item) {
@@ -78,12 +93,24 @@ export abstract class BaseVirtualList<T = any> {
     }
 
     appendItem(item: T, fireCompute = true) {
+        if (this.cacheSafe && typeof item === 'object') {
+            this.setItemCache(item, (this.itemKeyComputer as VirtualItemKeyFieldComputer)(item), this.allList.length);
+        }
         this.allList.push(item);
         fireCompute && this.compute();
     }
     appendItems(items: T[], fireCompute = true) {
-        // eslint-disable-next-line prefer-spread
-        this.allList.push.apply(this.allList, items);
+        if (this.cacheSafe && typeof items[0] === 'object') {
+            const len = this.allList.length;
+            items.forEach((item, i) => {
+                this.setItemCache(item, (this.itemKeyComputer as VirtualItemKeyFieldComputer)(item), len + i);
+                this.allList.push(item);
+            });
+        } else {
+            // eslint-disable-next-line prefer-spread
+            this.allList.push.apply(this.allList, items);
+        }
+
         fireCompute && this.compute();
     }
 
@@ -104,6 +131,10 @@ export abstract class BaseVirtualList<T = any> {
     clear(fireCompute = true) {
         this.allList = [];
         this.keyMark = {};
+        this.itemMapKey = new Map();
+        this.keyMapIndex = {};
+        this.indexMapKey = [];
+        this.cacheSafe = false;
         this.totalSize = 0;
         this.uuid = 0;
         this.showListBeginIndex =
@@ -113,6 +144,7 @@ export abstract class BaseVirtualList<T = any> {
             this.endBufferBeginIndex =
             this.endBufferEndIndex =
                 -1;
+        this.nowScrollStartSize = this.oldScrollStartSize = 0;
         fireCompute && this.compute();
     }
 
@@ -164,7 +196,7 @@ export abstract class BaseVirtualList<T = any> {
         Object.assign(this, range);
     }
 
-    protected findItemByKey(key: string | number | T): [T, number] | undefined {
+    findItemByKey(key: string | number | T): [T, number] | undefined {
         let targetKey;
         if (typeof key === 'object') {
             if (!key) {
@@ -174,18 +206,52 @@ export abstract class BaseVirtualList<T = any> {
         } else {
             targetKey = key;
         }
-        let res;
+        if (this.cacheSafe && targetKey in this.keyMapIndex) {
+            return [this.allList[this.keyMapIndex[targetKey]], this.keyMapIndex[targetKey]];
+        }
+        let res: [T, number] | undefined;
         each(this.allList, (item, index) => {
             if (key === item) {
+                const sk = (this.itemKeyComputer as VirtualItemKeyFieldComputer<T>)(item);
                 res = [item, index];
+                this.cacheSafe && typeof item === 'object' && this.setItemCache(item, sk, index);
                 return false;
             }
-            if ((this.itemKeyComputer as VirtualItemKeyFieldComputer<T>)(item) === targetKey) {
+            const currentKey = (this.itemKeyComputer as VirtualItemKeyFieldComputer<T>)(item);
+            this.cacheSafe && typeof item === 'object' && this.setItemCache(item, currentKey, index);
+            if (currentKey === targetKey) {
                 res = [item, index];
                 return false;
             }
         });
         return res;
+    }
+
+    removeItemByIndex(index: number, fireCompute = true) {
+        if (!(index in this.allList)) {
+            return;
+        }
+        const [item] = this.allList.splice(index, 1);
+        if (this.cacheSafe && typeof item === 'object') {
+            this.itemMapKey.delete(item);
+            const itemKey = (this.itemKeyComputer as VirtualItemKeyFieldComputer)(item);
+            delete this.keyMapIndex[itemKey];
+            this.indexMapKey.splice(index);
+        }
+        fireCompute && this.compute();
+    }
+    removeItemByKey(key: string | number | T, fireCompute = true) {
+        const [, index] = this.findItemByKey(key) || [];
+        if (typeof index === 'number') {
+            this.removeItemByIndex(index);
+            fireCompute && this.compute();
+        }
+    }
+
+    private setItemCache(item: T, key: string | number, index: number) {
+        this.itemMapKey.set(item, key);
+        this.keyMapIndex[key] = index;
+        this.indexMapKey[index] = key;
     }
 
     private sliceList(
@@ -201,14 +267,15 @@ export abstract class BaseVirtualList<T = any> {
             res.push({
                 item: this.allList[i],
                 index: i,
-                key: this.uniqueKey(this.allList[i], i),
+                maxIndex: this.allList.length - 1,
+                key: this.fillKey(this.allList[i], i),
                 offset: this.getItemOffsetSizeByIndex(i),
                 scope
             });
         }
         return res;
     }
-    private uniqueKey(item: T, index: number): string {
+    private fillKey(item: T, index: number): string {
         let key = '';
         if (typeof item === 'object' && item) {
             key = (this.itemKeyComputer as VirtualItemKeyFieldComputer<T>)(item);
@@ -216,17 +283,10 @@ export abstract class BaseVirtualList<T = any> {
         } else {
             key = String(index);
         }
-
-        while (true) {
-            if (!(key in this.keyMark)) {
-                return key;
-            }
-            key += String(this.uuid++);
-        }
         return key;
     }
 
-    abstract getItemOffsetSizeByIndex(indexOrItemSelf: number): number;
+    abstract getItemOffsetSizeByIndex(index: number): number;
     protected abstract getTotalSize(): number;
     protected abstract computeRange(): VirtualListRange;
 }

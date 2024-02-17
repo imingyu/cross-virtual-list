@@ -94,6 +94,24 @@ export class DynamicSizeVirtualList<T = any> extends BaseVirtualList<T> {
         return !index ? 0 : this.itemSizeSum[index] - this.getItemSize(index);
     }
 
+    removeItemByIndex(index: number, fireCompute = true) {
+        if (index in this.itemReadySize) {
+            const oldSize = this.itemReadySize[index];
+            delete this.itemReadySize[index];
+            this.itemReadyTotalSize -= oldSize;
+            this.itemSizeReadyCount--;
+            this.computeDynamicTotalSize();
+        }
+        fireCompute && this.computeItemSizeSum(index - 1 > 0 ? 0 : index);
+        super.removeItemByIndex(index, fireCompute);
+    }
+    removeItemByKey(key: string | number | T, fireCompute = true) {
+        const [, index] = this.findItemByKey(key) || [];
+        if (typeof index === 'number') {
+            this.removeItemByIndex(index, fireCompute);
+        }
+    }
+
     protected getTotalSize(): number {
         if (!this.dynamicTotalSize) {
             return this.computeDynamicTotalSize();
@@ -125,24 +143,29 @@ export class DynamicSizeVirtualList<T = any> extends BaseVirtualList<T> {
     private computeShowRange() {
         const { nowScrollStartSize } = this;
         if (nowScrollStartSize < this.config.itemMinSize) {
-            return [0, this.expectViewportShowCount - 1];
+            return [0, Math.min(this.expectViewportShowCount - 1, this.allList.length - 1)];
         }
 
-        const possibleStartIndex = Math.ceil(nowScrollStartSize / this.config.itemMinSize);
+        const possibleStartIndex = Math.min(
+            Math.ceil(nowScrollStartSize / this.config.itemMinSize),
+            this.allList.length - 1
+        );
         this.computeItemSizeSum(possibleStartIndex, possibleStartIndex + this.expectViewportShowCount);
         let showListBeginIndex = possibleStartIndex;
-        if (this.itemSizeSum[showListBeginIndex] < nowScrollStartSize) {
-            for (let i = possibleStartIndex; i >= 0; i--) {
-                if (nowScrollStartSize >= this.itemSizeSum[i]) {
-                    showListBeginIndex = i;
-                    break;
+        if (showListBeginIndex > 0) {
+            if (this.itemSizeSum[showListBeginIndex] < nowScrollStartSize) {
+                for (let i = possibleStartIndex; i >= 0; i--) {
+                    if (nowScrollStartSize >= this.itemSizeSum[i]) {
+                        showListBeginIndex = i;
+                        break;
+                    }
                 }
-            }
-        } else {
-            while (true) {
-                showListBeginIndex--;
-                if (this.itemSizeSum[showListBeginIndex] < nowScrollStartSize || showListBeginIndex <= 0) {
-                    break;
+            } else {
+                while (true) {
+                    showListBeginIndex--;
+                    if (this.itemSizeSum[showListBeginIndex] < nowScrollStartSize || showListBeginIndex <= 0) {
+                        break;
+                    }
                 }
             }
         }
@@ -159,9 +182,12 @@ export class DynamicSizeVirtualList<T = any> extends BaseVirtualList<T> {
         }
         return [
             showListBeginIndex,
-            showListEndIndex === showListBeginIndex
-                ? showListBeginIndex + this.expectViewportShowCount - 1
-                : showListEndIndex
+            Math.min(
+                showListEndIndex === showListBeginIndex
+                    ? showListBeginIndex + this.expectViewportShowCount - 1
+                    : showListEndIndex,
+                this.allList.length - 1
+            )
         ];
     }
 
@@ -196,7 +222,12 @@ export class DynamicSizeVirtualList<T = any> extends BaseVirtualList<T> {
         }
         return [
             startBufferBeginIndex,
-            readyStartBufferCount === 1 ? startBufferBeginIndex : startBufferBeginIndex + (readyStartBufferCount - 1),
+            Math.min(
+                readyStartBufferCount === 1
+                    ? startBufferBeginIndex
+                    : startBufferBeginIndex + (readyStartBufferCount - 1),
+                this.allList.length - 1
+            ),
             residualScrollStartSize,
             readyStartBufferSize
         ];
@@ -210,12 +241,17 @@ export class DynamicSizeVirtualList<T = any> extends BaseVirtualList<T> {
             return [-1, -1];
         }
         const endIndex = showListEndIndex + 1 + expectEndBufferCount;
-        return [showListEndIndex + 1, endIndex >= maxIndex ? maxIndex : endIndex];
+        return [showListEndIndex + 1, Math.min(endIndex, maxIndex)];
     }
 
     private computeItemSizeSum(startIndex?: number, stopIndex?: number) {
+        if (!this.allList.length) {
+            return;
+        }
         startIndex = startIndex === undefined ? 0 : startIndex;
+        startIndex = Math.min(startIndex, this.allList.length - 1);
         stopIndex = stopIndex === undefined ? this.allList.length - 1 : stopIndex;
+        stopIndex = Math.min(stopIndex, this.allList.length - 1);
         for (let i = startIndex; i <= stopIndex; i++) {
             const currentSize = this.getItemSize(i);
             let beforeSize;

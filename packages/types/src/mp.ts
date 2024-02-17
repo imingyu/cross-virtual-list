@@ -8,10 +8,12 @@ export interface MpVirtualListComponentProps {
     /** 容器尺寸 */
     containerSize?: number;
     /** 容器尺寸HASH值，当值变化时将触发显示列表索引范围的重新计算 */
-    containerSizeHash?: string;
+    containerSizeHash?: string | number;
     itemKeyField?: string | string[];
     /** 使用总列表数量计算出的用以撑开高度/宽度的容器样式 */
     contentStyle?: string;
+    /** 外部使用虚拟列表时传入的状态数据，此数据将原封不动的继续传给item组件，可以做到通信的目的 */
+    state?: any;
 }
 
 export interface MpVirtualListComponentData<T = any> {
@@ -25,6 +27,14 @@ export interface MpVirtualListComponentExports<T = any> {
     setList: (val: T[]) => void;
     appendItem: (item: T) => void;
     appendItems: (items: T[]) => void;
+    findItemByKey: (key: string | number | T) => [T, number] | undefined;
+}
+
+export interface MpDynamicSizeVirtualListComponentExports<T = any> extends MpVirtualListComponentExports<T> {
+    reQueryItemElementSizeByIndex: (itemIndex: number) => void;
+    reQueryItemElementSizeByKey: (itemKey: string | number | T) => void;
+    setItemSizeByKey: (itemKey: string | number | T, size: number) => void;
+    setItemSizeByIndex: (itemIndex: number, size: number) => void;
 }
 
 export interface MpClientRect {

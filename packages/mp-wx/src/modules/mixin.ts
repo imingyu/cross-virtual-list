@@ -45,6 +45,7 @@ export class MpVirtualListComponentMixin<
         },
         containerSizeHash: {
             type: String,
+            optionalTypes: [String, Number],
             observer() {
                 delete this.computedContainerSizeValue;
                 delete this.containerSizeComputePromise;
@@ -59,6 +60,9 @@ export class MpVirtualListComponentMixin<
             observer() {
                 this.updateVlConfig();
             }
+        },
+        state: {
+            type: null
         }
     };
     initData: MpVirtualListComponentData = {
@@ -89,6 +93,9 @@ export class MpVirtualListComponentMixin<
     attached() {
         this.isAttached = true;
     }
+    emitInteract(e) {
+        this.triggerEvent('interact', e.detail);
+    }
     clear() {
         if (this.clearing) {
             return;
@@ -118,6 +125,9 @@ export class MpVirtualListComponentMixin<
         this.$vl.appendItems(items);
         this.syncVlList();
     }
+    findItemByKey(key: string | number | T): [T, number] | undefined {
+        return this.$vl.findItemByKey(key);
+    }
     checkReady() {
         if (!this.isReady && this.computedContainerSizeValue) {
             this.isReady = true;
@@ -126,6 +136,7 @@ export class MpVirtualListComponentMixin<
                 setList: this.setList.bind(this),
                 appendItem: this.appendItem.bind(this),
                 appendItems: this.appendItems.bind(this),
+                findItemByKey: this.findItemByKey.bind(this),
                 ...(this.MixinConfig.readyExportsGetter?.(this) || {})
             };
             if (!this.isAttached) {
@@ -210,6 +221,17 @@ export class MpVirtualListComponentMixin<
             const oldLastOffset = this.data.list[this.data.list.length - 1]?.offset;
             const newLastOffset = list[list.length - 1]?.offset;
             if (oldLastOffset !== newLastOffset) {
+                renderData.list = list;
+                this.fireRender(renderData);
+                return;
+            }
+
+            if (JSON.stringify(this.data.list[0]) !== JSON.stringify(list[0])) {
+                renderData.list = list;
+                this.fireRender(renderData);
+                return;
+            }
+            if (JSON.stringify(this.data.list[this.data.list.length - 1]) !== JSON.stringify(list[list.length - 1])) {
                 renderData.list = list;
                 this.fireRender(renderData);
                 return;

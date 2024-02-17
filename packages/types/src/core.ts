@@ -41,5 +41,6 @@ export interface VirtualItem<T = any> {
     index: number;
     key: string;
     offset: number;
+    maxIndex: number;
     scope: 'startBuffer' | 'show' | 'endBuffer';
 }

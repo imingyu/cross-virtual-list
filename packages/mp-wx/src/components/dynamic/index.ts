@@ -16,8 +16,6 @@ class MpDynamicSizeVirtualListComponent<T = any> extends MpComponent<
     selfHash: string;
     queryHash = 0;
     querying: boolean;
-    queryStartIndex: number;
-    queryEndIndex: number;
     createSelectorQuery: (...args: any[]) => any;
     $mx = {
         adapter: new MpVirtualListComponentMixin<T, DynamicSizeVirtualListConfig, DynamicSizeVirtualList>({
@@ -30,7 +28,9 @@ class MpDynamicSizeVirtualListComponent<T = any> extends MpComponent<
             readyExportsGetter: (ctx: MpDynamicSizeVirtualListComponent<T>) => {
                 return {
                     setItemSizeByKey: ctx.setItemSizeByKey.bind(ctx),
-                    setItemSizeByIndex: ctx.setItemSizeByIndex.bind(ctx)
+                    setItemSizeByIndex: ctx.setItemSizeByIndex.bind(ctx),
+                    reQueryItemElementSizeByIndex: ctx.reQueryItemElementSizeByIndex.bind(ctx),
+                    reQueryItemElementSizeByKey: ctx.reQueryItemElementSizeByKey.bind(ctx)
                 };
             },
             onRenderDone: (ctx: MpDynamicSizeVirtualListComponent<T>) => {
@@ -57,18 +57,32 @@ class MpDynamicSizeVirtualListComponent<T = any> extends MpComponent<
         this.$mx.adapter.$vl.setItemSizeByIndex(itemIndex, size, false);
         this.$mx.adapter.syncVlList();
     }
+    reQueryItemElementSizeByIndex(itemIndex: number) {
+        this.createSelectorQuery()
+            .select(`.vl-hash-${this.selfHash}.vl-index-${itemIndex}`)
+            .boundingClientRect((rect?: MpClientRect) => {
+                if (!rect) {
+                    return;
+                }
+                const sizeProp = this.$mx.adapter.data.scrollX && !this.$mx.adapter.data.scrollY ? 'width' : 'height';
+                this.setItemSizeByIndex(itemIndex, rect[sizeProp]);
+            })
+            .exec();
+    }
+    reQueryItemElementSizeByKey(itemKey: string | number | T) {
+        const [, index] = this.$mx.adapter.$vl.findItemByKey(itemKey) || [];
+        if (typeof index !== 'number') {
+            return;
+        }
+        this.reQueryItemElementSizeByIndex(index);
+    }
     checkItemSizeReady(itemIndex: number) {
         return this.$mx.adapter.$vl.checkItemSizeReady(itemIndex);
     }
     queryListElementsSize() {
-        const currentQueryStartIndex = this.data.list[0].index;
-        const currentQueryEndIndex = this.data.list[this.data.list.length - 1].index;
-        if (currentQueryStartIndex === this.queryStartIndex && currentQueryEndIndex === this.queryEndIndex) {
-            return;
-        }
         let allItemSizeIsReady = true;
-        for (let i = currentQueryStartIndex; i <= currentQueryEndIndex; i++) {
-            allItemSizeIsReady = this.checkItemSizeReady(i);
+        for (let i = 0, len = this.data.list?.length || 0; i < len; i++) {
+            allItemSizeIsReady = this.checkItemSizeReady(this.data.list[i].index);
             if (!allItemSizeIsReady) {
                 break;
             }
@@ -83,8 +97,6 @@ class MpDynamicSizeVirtualListComponent<T = any> extends MpComponent<
         }
         const fire = () => {
             this.querying = true;
-            this.queryStartIndex = this.data.list[0].index;
-            this.queryEndIndex = this.data.list[this.data.list.length - 1].index;
             this.createSelectorQuery()
                 .selectAll(`.vl-hash-${this.selfHash}`)
                 .boundingClientRect((rects: MpClientRect[]) => {

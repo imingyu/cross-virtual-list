@@ -2,11 +2,13 @@
     scroll-y="{{ scrollX && !scrollY ? false : true }}" scroll-x="{{ scrollX && !scrollY ? true : false }}"
     bind:scroll="onScroll">
     <view class="vl-list" style="{{contentStyle}};{{ elListStyle }}">
-        <view wx:for="{{ list }}" wx:key="key" class="vl-item vl-hash-{{selfHash}}"
+        <view wx:for="{{ list }}" wx:key="key"
+            class="vl-item vl-hash-{{selfHash}} vl-key-{{item.key}} vl-index-{{item.index}}"
             style="transform: {{ scrollX && !scrollY ? 'translateX' : 'translateY' }}({{ item.offset }}px);{{ scrollX && !scrollY ? 'min-width' : 'min-height' }}:{{itemMinSize?(itemMinSize+'px'):null}};"
             data-index="{{item.index}}">
-            <item value="{{ item.item }}" index="{{ item.index }}" direction="{{ scrollX && !scrollY ? 'x' : 'y' }}"
-                scope="{{item.scope}}">
+            <item value="{{ item.item }}" index="{{ item.index }}" maxIndex="{{ item.maxIndex }}"
+                direction="{{ scrollX && !scrollY ? 'x' : 'y' }}" scope="{{item.scope}}" state="{{state}}"
+                bind:interact="emitInteract">
             </item>
         </view>
     </view>
