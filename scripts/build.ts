@@ -89,21 +89,8 @@ const getMpWxBuildOptions = (): Array<[RollupOptions, () => Promise<any>]> => {
                 ],
                 output: [
                     {
-                        format: 'cjs',
-                        dir: ROOT_DIR + '/packages/mp-wx/dist/cjs',
-                        chunkFileNames: '[name].js',
-                        manualChunks: (id) => {
-                            if (id.includes('node_modules')) {
-                                return 'vender';
-                            }
-                            if (!id.includes('components')) {
-                                return 'common';
-                            }
-                        }
-                    },
-                    {
                         format: 'esm',
-                        dir: ROOT_DIR + '/packages/mp-wx/dist/esm',
+                        dir: ROOT_DIR + '/packages/mp-wx/dist/npm',
                         chunkFileNames: '[name].js',
                         manualChunks: (id) => {
                             if (id.includes('node_modules')) {
@@ -118,8 +105,7 @@ const getMpWxBuildOptions = (): Array<[RollupOptions, () => Promise<any>]> => {
             },
             () => {
                 return Promise.all([
-                    compilerMpResource(ROOT_DIR + '/packages/mp-wx/src', ROOT_DIR + '/packages/mp-wx/dist/cjs'),
-                    compilerMpResource(ROOT_DIR + '/packages/mp-wx/src', ROOT_DIR + '/packages/mp-wx/dist/esm')
+                    compilerMpResource(ROOT_DIR + '/packages/mp-wx/src', ROOT_DIR + '/packages/mp-wx/dist/npm')
                 ]);
             }
         ],
@@ -140,7 +126,7 @@ const getMpWxBuildOptions = (): Array<[RollupOptions, () => Promise<any>]> => {
                 output: [
                     {
                         format: 'esm',
-                        dir: ROOT_DIR + '/packages/mp-wx/dist/esm-full',
+                        dir: ROOT_DIR + '/packages/mp-wx/dist/full',
                         chunkFileNames: '[name].js',
                         manualChunks: (id) => {
                             if (id.includes('node_modules')) {
@@ -155,11 +141,11 @@ const getMpWxBuildOptions = (): Array<[RollupOptions, () => Promise<any>]> => {
             },
             () => {
                 return Promise.all([
-                    compilerMpResource(ROOT_DIR + '/packages/mp-wx/src', ROOT_DIR + '/packages/mp-wx/dist/esm-full')
+                    compilerMpResource(ROOT_DIR + '/packages/mp-wx/src', ROOT_DIR + '/packages/mp-wx/dist/full')
                 ]).then(() => {
                     rimraf.sync(ROOT_DIR + '/packages/mp-wx/examples/vl-dist');
                     return copyPromise(
-                        ROOT_DIR + '/packages/mp-wx/dist/esm-full/**/*.*',
+                        ROOT_DIR + '/packages/mp-wx/dist/full/**/*.*',
                         ROOT_DIR + '/packages/mp-wx/examples/vl-dist'
                     );
                 });
