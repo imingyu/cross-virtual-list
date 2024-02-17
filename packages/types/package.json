@@ -2,6 +2,7 @@
     "name": "@cross-virtual-list/types",
     "version": "0.1.0",
     "description": "跨平台虚拟列表组件types",
+    "public": true,
     "main": "./src/index.ts",
     "publishConfig": {
         "main": "./dist/index.d.ts",

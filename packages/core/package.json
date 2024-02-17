@@ -2,6 +2,7 @@
     "name": "@cross-virtual-list/core",
     "version": "0.1.0",
     "description": "跨平台虚拟列表组件的核心抽象封装",
+    "public": true,
     "main": "./src/index.ts",
     "publishConfig": {
         "main": "./dist/esm/index.js",
