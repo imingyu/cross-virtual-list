@@ -27,6 +27,7 @@ export interface MpVirtualListComponentExports<T = any> {
     setList: (val: T[]) => void;
     appendItem: (item: T) => void;
     appendItems: (items: T[]) => void;
+    replaceItemByKey: (key: string | number | T, replacement: T | ((target: T) => void)) => boolean;
     findItemByKey: (key: string | number | T) => [T, number] | undefined;
 }
 

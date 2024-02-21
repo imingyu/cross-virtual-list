@@ -125,6 +125,13 @@ export class MpVirtualListComponentMixin<
         this.$vl.appendItems(items);
         this.syncVlList();
     }
+    replaceItemByKey(key: string | number | T, replacement: T | ((target: T) => void)): boolean {
+        const res = this.$vl.replaceItemByKey(key, replacement);
+        if (res) {
+            this.syncVlList();
+        }
+        return res;
+    }
     findItemByKey(key: string | number | T): [T, number] | undefined {
         return this.$vl.findItemByKey(key);
     }
@@ -137,6 +144,7 @@ export class MpVirtualListComponentMixin<
                 appendItem: this.appendItem.bind(this),
                 appendItems: this.appendItems.bind(this),
                 findItemByKey: this.findItemByKey.bind(this),
+                replaceItemByKey: this.replaceItemByKey.bind(this),
                 ...(this.MixinConfig.readyExportsGetter?.(this) || {})
             };
             if (!this.isAttached) {
@@ -169,6 +177,8 @@ export class MpVirtualListComponentMixin<
         return this.containerSizeComputePromise;
     }
     updateVlConfig(sync = true) {
+        const change = (this.$vl.config.viewportSize || 0) !== (this.computedContainerSizeValue || 0);
+        change && this.$vl.resetScrollSize();
         this.$vl.setConfig(
             {
                 ...this.MixinConfig.adapterConfigGetter(this),
@@ -226,12 +236,7 @@ export class MpVirtualListComponentMixin<
                 return;
             }
 
-            if (JSON.stringify(this.data.list[0]) !== JSON.stringify(list[0])) {
-                renderData.list = list;
-                this.fireRender(renderData);
-                return;
-            }
-            if (JSON.stringify(this.data.list[this.data.list.length - 1]) !== JSON.stringify(list[list.length - 1])) {
+            if (JSON.stringify(this.data.list) !== JSON.stringify(list)) {
                 renderData.list = list;
                 this.fireRender(renderData);
                 return;
