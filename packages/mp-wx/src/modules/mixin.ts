@@ -132,6 +132,10 @@ export class MpVirtualListComponentMixin<
         }
         return res;
     }
+    removeItemByKey(key: string | number | T) {
+        this.$vl.removeItemByKey(key);
+        this.syncVlList();
+    }
     findItemByKey(key: string | number | T): [T, number] | undefined {
         return this.$vl.findItemByKey(key);
     }
@@ -145,6 +149,7 @@ export class MpVirtualListComponentMixin<
                 appendItems: this.appendItems.bind(this),
                 findItemByKey: this.findItemByKey.bind(this),
                 replaceItemByKey: this.replaceItemByKey.bind(this),
+                removeItemByKey: this.removeItemByKey.bind(this),
                 ...(this.MixinConfig.readyExportsGetter?.(this) || {})
             };
             if (!this.isAttached) {
@@ -253,7 +258,11 @@ export class MpVirtualListComponentMixin<
         const sizeProp = isX ? 'min-width' : 'min-height';
         this.$vl.compute();
         const elListStyle = `${sizeProp}:${this.$vl.getSize().totalSize}px;`;
-        const list = this.$vl.getStartBufferList().concat(this.$vl.getShowList()).concat(this.$vl.getEndBufferList());
+        const list = JSON.parse(
+            JSON.stringify(
+                this.$vl.getStartBufferList().concat(this.$vl.getShowList()).concat(this.$vl.getEndBufferList())
+            )
+        );
         this.comparisonSetData({
             elListStyle,
             list,

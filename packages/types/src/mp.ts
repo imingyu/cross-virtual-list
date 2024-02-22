@@ -28,6 +28,7 @@ export interface MpVirtualListComponentExports<T = any> {
     appendItem: (item: T) => void;
     appendItems: (items: T[]) => void;
     replaceItemByKey: (key: string | number | T, replacement: T | ((target: T) => void)) => boolean;
+    removeItemByKey: (key: string | number | T) => void;
     findItemByKey: (key: string | number | T) => [T, number] | undefined;
 }
 
@@ -54,4 +55,13 @@ export interface MpRegularSizeVirtualListComponentProps {
 export interface MpDynamicSizeVirtualListComponentProps {
     /** 列表项最小尺寸 */
     itemMinSize: number;
+}
+
+export interface MpVirtualListItemComponentProps<T = any, S = any> {
+    value: T;
+    index: number;
+    maxIndex: number;
+    direction: 'x' | 'y';
+    scope: 'startBuffer' | 'show' | 'endBuffer';
+    state: S;
 }
