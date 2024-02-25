@@ -136,8 +136,8 @@ importers:
         specifier: workspace:*
         version: link:../core
       cross-mp-power:
-        specifier: ^0.1.3
-        version: 0.1.3
+        specifier: 0.1.4
+        version: 0.1.4
       typescript-mp-component:
         specifier: 0.1.1
         version: 0.1.1
@@ -2499,8 +2499,8 @@ packages:
       typescript: 5.3.3
     dev: true
 
-  /cross-mp-power@0.1.3:
-    resolution: {integrity: sha512-o93Vl+RAYU3fCYZbWPPhdBjCcCC7zKhAI4gWFiypdqTxe66LgtVeXi5NNrfwARUxmIAqK818TIwfzMgvzVxnSw==}
+  /cross-mp-power@0.1.4:
+    resolution: {integrity: sha512-7EE8rSCqe9DFYSTzB71seGBlKF86TjDdpyEZpuysVoihA4in+4WiaS3+QSEhLN3HBVgVP+SBYmeJbRmfeVkisw==}
     dev: false
 
   /cross-spawn@7.0.3:

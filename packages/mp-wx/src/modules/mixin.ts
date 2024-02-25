@@ -7,8 +7,8 @@ import type {
     MpVirtualListComponentExports,
     MpVirtualListComponentProps
 } from '@cross-virtual-list/types';
-import { getBoundingClientRect, uuid } from './tool';
-import { nextTick } from 'cross-mp-power';
+import { uuid } from './tool';
+import { nextTick, selectBoundingClientRect } from 'cross-mp-power';
 
 export class MpVirtualListComponentMixin<
     T = any,
@@ -173,12 +173,16 @@ export class MpVirtualListComponentMixin<
             return this.containerSizeComputePromise;
         }
         if (!this.containerSizeComputePromise) {
-            this.containerSizeComputePromise = getBoundingClientRect(this, '.vl-container').then((res) => {
-                this.computedContainerSizeValue =
-                    res[this.data.scrollY ? 'height' : this.data.scrollX && !this.data.scrollY ? 'height' : 'width'];
-                this.updateVlConfig(false);
-                return this.computedContainerSizeValue;
-            });
+            this.containerSizeComputePromise = selectBoundingClientRect('.vl-container', this, undefined, 3).then(
+                (res) => {
+                    this.computedContainerSizeValue =
+                        res[
+                            this.data.scrollY ? 'height' : this.data.scrollX && !this.data.scrollY ? 'height' : 'width'
+                        ];
+                    this.updateVlConfig(false);
+                    return this.computedContainerSizeValue;
+                }
+            );
         }
         return this.containerSizeComputePromise;
     }

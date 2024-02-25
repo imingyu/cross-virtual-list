@@ -7,8 +7,7 @@ import type {
 import type { MpComponentProperties } from 'typescript-mp-component';
 import { MpComponent, toMpComponentConfig } from 'typescript-mp-component';
 import { MpVirtualListComponentMixin } from '../../modules/mixin';
-import { getBoundingClientRect } from '../../modules/tool';
-import { selectAllBoundingClientRect } from 'cross-mp-power';
+import { selectAllBoundingClientRect, selectBoundingClientRect } from 'cross-mp-power';
 
 class MpDynamicSizeVirtualListComponent<T = any> extends MpComponent<
     MpVirtualListComponentData,
@@ -59,10 +58,12 @@ class MpDynamicSizeVirtualListComponent<T = any> extends MpComponent<
         this.$mx.adapter.syncVlList();
     }
     reQueryItemElementSizeByIndex(itemIndex: number) {
-        getBoundingClientRect(this, `.vl-hash-${this.selfHash}.vl-index-${itemIndex}`, 0).then((rect) => {
-            const sizeProp = this.$mx.adapter.data.scrollX && !this.$mx.adapter.data.scrollY ? 'width' : 'height';
-            this.setItemSizeByIndex(itemIndex, rect[sizeProp]);
-        });
+        selectBoundingClientRect(`.vl-hash-${this.selfHash}.vl-index-${itemIndex}`, this, undefined, 2)
+            .then((rect) => {
+                const sizeProp = this.$mx.adapter.data.scrollX && !this.$mx.adapter.data.scrollY ? 'width' : 'height';
+                this.setItemSizeByIndex(itemIndex, rect[sizeProp]);
+            })
+            .catch(() => {});
     }
     reQueryItemElementSizeByKey(itemKey: string | number | T) {
         const [, index] = this.$mx.adapter.$vl.findItemByKey(itemKey) || [];
@@ -91,19 +92,23 @@ class MpDynamicSizeVirtualListComponent<T = any> extends MpComponent<
             return;
         }
         this.querying = true;
-        selectAllBoundingClientRect(`.vl-hash-${this.selfHash}`, this).then((rects) => {
-            this.querying = false;
-            const sizeProp = this.$mx.adapter.data.scrollX && !this.$mx.adapter.data.scrollY ? 'width' : 'height';
-            rects.forEach((rect) => {
-                const index = rect.dataset.index;
-                this.setItemSizeByIndex(parseInt(index), rect[sizeProp]);
+        selectAllBoundingClientRect(`.vl-hash-${this.selfHash}`, this)
+            .catch(() => {})
+            .then((rects) => {
+                this.querying = false;
+                const sizeProp = this.$mx.adapter.data.scrollX && !this.$mx.adapter.data.scrollY ? 'width' : 'height';
+                if (rects) {
+                    rects.forEach((rect) => {
+                        const index = rect.dataset.index;
+                        this.setItemSizeByIndex(parseInt(index), rect[sizeProp]);
+                    });
+                }
+                if (currentHash !== this.queryHash) {
+                    this.queryListElementsSize();
+                } else {
+                    this.queryHash = 0;
+                }
             });
-            if (currentHash !== this.queryHash) {
-                this.queryListElementsSize();
-            } else {
-                this.queryHash = 0;
-            }
-        });
     }
 }
 

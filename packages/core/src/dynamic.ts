@@ -3,7 +3,6 @@ import type { DynamicSizeVirtualListConfig, VirtualListRange } from '@cross-virt
 
 export class DynamicSizeVirtualList<T = any> extends BaseVirtualList<T> {
     declare config: DynamicSizeVirtualListConfig;
-    private dynamicTotalSize = 0;
     private itemReadySize: Record<number, number> = {};
     private itemSizeReadyCount = 0;
     private itemReadyTotalSize = 0;
@@ -46,7 +45,7 @@ export class DynamicSizeVirtualList<T = any> extends BaseVirtualList<T> {
 
     clear(fireCompute = true) {
         super.clear(fireCompute);
-        this.itemSizeReadyCount = this.itemReadyTotalSize = this.dynamicTotalSize = 0;
+        this.itemSizeReadyCount = this.itemReadyTotalSize = 0;
         this.itemReadySize = {};
         this.itemSizeSum = [];
         this.expectStartBufferCount = this.expectEndBufferCount = this.expectViewportShowCount = 0;
@@ -113,10 +112,7 @@ export class DynamicSizeVirtualList<T = any> extends BaseVirtualList<T> {
     }
 
     protected getTotalSize(): number {
-        if (!this.dynamicTotalSize) {
-            return this.computeDynamicTotalSize();
-        }
-        return this.dynamicTotalSize;
+        return this.computeDynamicTotalSize();
     }
 
     protected computeRange(): VirtualListRange {
@@ -269,12 +265,6 @@ export class DynamicSizeVirtualList<T = any> extends BaseVirtualList<T> {
     }
 
     private computeDynamicTotalSize() {
-        if (this.allList.length && !this.dynamicTotalSize) {
-            this.dynamicTotalSize = this.allList.length * this.config.itemMinSize;
-            return this.dynamicTotalSize;
-        }
-        this.dynamicTotalSize =
-            this.itemReadyTotalSize + (this.allList.length - this.itemSizeReadyCount) * this.config.itemMinSize;
-        return this.dynamicTotalSize;
+        return this.itemReadyTotalSize + (this.allList.length - this.itemSizeReadyCount) * this.config.itemMinSize;
     }
 }
