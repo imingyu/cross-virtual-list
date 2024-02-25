@@ -1,6 +1,6 @@
 {
     "name": "@cross-virtual-list/types",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "description": "跨平台虚拟列表组件types",
     "access": "public",
     "main": "./src/index.ts",

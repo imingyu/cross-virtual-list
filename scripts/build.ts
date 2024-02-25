@@ -74,7 +74,7 @@ const getMpWxBuildOptions = (): Array<[RollupOptions, () => Promise<any>]> => {
     return [
         [
             {
-                external: [/@cross-virtual-list\//, 'typescript-mp-component'],
+                external: [/@cross-virtual-list\//, 'typescript-mp-component', 'cross-mp-power'],
                 input: {
                     'components/regular/index': ROOT_DIR + '/packages/mp-wx/src/components/regular/index.ts',
                     'components/dynamic/index': ROOT_DIR + '/packages/mp-wx/src/components/dynamic/index.ts'
