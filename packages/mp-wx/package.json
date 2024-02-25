@@ -1,6 +1,6 @@
 {
     "name": "@cross-virtual-list/mp-wx",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "description": "适用于微信小程序的虚拟列表组件，支持横向/竖向滚动，支持列表项尺寸可变/不变等功能。",
     "access": "public",
     "miniprogram": "dist/npm",
