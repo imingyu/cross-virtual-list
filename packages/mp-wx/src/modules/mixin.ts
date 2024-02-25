@@ -8,6 +8,7 @@ import type {
     MpVirtualListComponentProps
 } from '@cross-virtual-list/types';
 import { getBoundingClientRect, uuid } from './tool';
+import { nextTick } from 'cross-mp-power';
 
 export class MpVirtualListComponentMixin<
     T = any,
@@ -55,14 +56,14 @@ export class MpVirtualListComponentMixin<
             }
         },
         itemKeyField: {
-            type: null,
+            type: String,
             optionalTypes: [String, Array],
             observer() {
                 this.updateVlConfig();
             }
         },
         state: {
-            type: null
+            type: Object
         }
     };
     initData: MpVirtualListComponentData = {
@@ -153,7 +154,7 @@ export class MpVirtualListComponentMixin<
                 ...(this.MixinConfig.readyExportsGetter?.(this) || {})
             };
             if (!this.isAttached) {
-                wx.nextTick(() => {
+                nextTick(() => {
                     this.triggerEvent('ready', comExports);
                 });
             } else {
@@ -288,7 +289,7 @@ export class MpVirtualListComponentMixin<
         }
         const fire = () => {
             this.syncing = true;
-            wx.nextTick(() => {
+            nextTick(() => {
                 this.syncing = false;
                 this.forceSyncVlList();
                 if (currentHash !== this.syncHash) {

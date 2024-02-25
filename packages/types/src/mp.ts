@@ -39,14 +39,6 @@ export interface MpDynamicSizeVirtualListComponentExports<T = any> extends MpVir
     setItemSizeByIndex: (itemIndex: number, size: number) => void;
 }
 
-export interface MpClientRect {
-    width: number;
-    height: number;
-    top: number;
-    left: number;
-    dataset: Record<string, any>;
-}
-
 export interface MpRegularSizeVirtualListComponentProps {
     /** 列表项尺寸 */
     itemSize: number;

@@ -35,4 +35,9 @@ class MpRegularSizeVirtualListComponent<T = any> extends MpComponent<
     };
 }
 
-Component(toMpComponentConfig(MpRegularSizeVirtualListComponent));
+const config = toMpComponentConfig(MpRegularSizeVirtualListComponent);
+if (typeof COMPILE_COMPONENT !== 'undefined') {
+    COMPILE_COMPONENT(config);
+} else {
+    Component(config);
+}

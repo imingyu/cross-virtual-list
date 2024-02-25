@@ -1,13 +1,14 @@
 import { DynamicSizeVirtualList } from '@cross-virtual-list/core';
 import type {
     DynamicSizeVirtualListConfig,
-    MpClientRect,
     MpDynamicSizeVirtualListComponentProps,
     MpVirtualListComponentData
 } from '@cross-virtual-list/types';
 import type { MpComponentProperties } from 'typescript-mp-component';
 import { MpComponent, toMpComponentConfig } from 'typescript-mp-component';
 import { MpVirtualListComponentMixin } from '../../modules/mixin';
+import { getBoundingClientRect } from '../../modules/tool';
+import { selectAllBoundingClientRect } from 'cross-mp-power';
 
 class MpDynamicSizeVirtualListComponent<T = any> extends MpComponent<
     MpVirtualListComponentData,
@@ -58,16 +59,10 @@ class MpDynamicSizeVirtualListComponent<T = any> extends MpComponent<
         this.$mx.adapter.syncVlList();
     }
     reQueryItemElementSizeByIndex(itemIndex: number) {
-        this.createSelectorQuery()
-            .select(`.vl-hash-${this.selfHash}.vl-index-${itemIndex}`)
-            .boundingClientRect((rect?: MpClientRect) => {
-                if (!rect) {
-                    return;
-                }
-                const sizeProp = this.$mx.adapter.data.scrollX && !this.$mx.adapter.data.scrollY ? 'width' : 'height';
-                this.setItemSizeByIndex(itemIndex, rect[sizeProp]);
-            })
-            .exec();
+        getBoundingClientRect(this, `.vl-hash-${this.selfHash}.vl-index-${itemIndex}`, 0).then((rect) => {
+            const sizeProp = this.$mx.adapter.data.scrollX && !this.$mx.adapter.data.scrollY ? 'width' : 'height';
+            this.setItemSizeByIndex(itemIndex, rect[sizeProp]);
+        });
     }
     reQueryItemElementSizeByKey(itemKey: string | number | T) {
         const [, index] = this.$mx.adapter.$vl.findItemByKey(itemKey) || [];
@@ -95,28 +90,26 @@ class MpDynamicSizeVirtualListComponent<T = any> extends MpComponent<
         if (this.querying) {
             return;
         }
-        const fire = () => {
-            this.querying = true;
-            this.createSelectorQuery()
-                .selectAll(`.vl-hash-${this.selfHash}`)
-                .boundingClientRect((rects: MpClientRect[]) => {
-                    this.querying = false;
-                    const sizeProp =
-                        this.$mx.adapter.data.scrollX && !this.$mx.adapter.data.scrollY ? 'width' : 'height';
-                    rects.forEach((rect) => {
-                        const index = rect.dataset.index;
-                        this.setItemSizeByIndex(parseInt(index), rect[sizeProp]);
-                    });
-                    if (currentHash !== this.queryHash) {
-                        this.queryListElementsSize();
-                    } else {
-                        this.queryHash = 0;
-                    }
-                })
-                .exec();
-        };
-        fire();
+        this.querying = true;
+        selectAllBoundingClientRect(`.vl-hash-${this.selfHash}`, this).then((rects) => {
+            this.querying = false;
+            const sizeProp = this.$mx.adapter.data.scrollX && !this.$mx.adapter.data.scrollY ? 'width' : 'height';
+            rects.forEach((rect) => {
+                const index = rect.dataset.index;
+                this.setItemSizeByIndex(parseInt(index), rect[sizeProp]);
+            });
+            if (currentHash !== this.queryHash) {
+                this.queryListElementsSize();
+            } else {
+                this.queryHash = 0;
+            }
+        });
     }
 }
 
-Component(toMpComponentConfig(MpDynamicSizeVirtualListComponent));
+const config = toMpComponentConfig(MpDynamicSizeVirtualListComponent);
+if (typeof COMPILE_COMPONENT !== 'undefined') {
+    COMPILE_COMPONENT(config);
+} else {
+    Component(config);
+}
