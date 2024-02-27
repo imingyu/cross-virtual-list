@@ -78,6 +78,7 @@ export class MpVirtualListComponentMixin<
             adapterConfigGetter: (component: any) => Partial<C>;
             readyExportsGetter?: (component: any) => Record<string, (...args: any[]) => any>;
             onRenderDone?: (component: any) => void;
+            onItemSizeMayBeChange?: (component: any, index: 'all' | number) => void;
         }
     ) {
         super();
@@ -103,6 +104,7 @@ export class MpVirtualListComponentMixin<
         }
         this.clearing = true;
         this.$vl.clear(true);
+        this.MixinConfig.onItemSizeMayBeChange?.(this, 'all');
         this.fireRender(
             {
                 list: [],
@@ -116,6 +118,7 @@ export class MpVirtualListComponentMixin<
     }
     setList(val: T[]) {
         this.$vl.setList(val);
+        this.MixinConfig.onItemSizeMayBeChange?.(this, 'all');
         this.syncVlList();
     }
     appendItem(item: T) {
@@ -127,6 +130,10 @@ export class MpVirtualListComponentMixin<
         this.syncVlList();
     }
     replaceItemByKey(key: string | number | T, replacement: T | ((target: T) => void)): boolean {
+        const [, index] = this.findItemByKey(key) || [];
+        if (index !== undefined) {
+            this.MixinConfig.onItemSizeMayBeChange?.(this, index);
+        }
         const res = this.$vl.replaceItemByKey(key, replacement);
         if (res) {
             this.syncVlList();
@@ -134,6 +141,10 @@ export class MpVirtualListComponentMixin<
         return res;
     }
     removeItemByKey(key: string | number | T) {
+        const [, index] = this.findItemByKey(key) || [];
+        if (index !== undefined) {
+            this.MixinConfig.onItemSizeMayBeChange?.(this, index);
+        }
         this.$vl.removeItemByKey(key);
         this.syncVlList();
     }
@@ -260,7 +271,7 @@ export class MpVirtualListComponentMixin<
             return;
         }
         const isX = this.data.scrollX && !this.data.scrollY;
-        const sizeProp = isX ? 'min-width' : 'min-height';
+        const sizeProp = isX ? 'width' : 'height';
         this.$vl.compute();
         const elListStyle = `${sizeProp}:${this.$vl.getSize().totalSize}px;`;
         const list = JSON.parse(

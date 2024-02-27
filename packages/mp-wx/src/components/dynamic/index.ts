@@ -7,7 +7,9 @@ import type {
 import type { MpComponentProperties } from 'typescript-mp-component';
 import { MpComponent, toMpComponentConfig } from 'typescript-mp-component';
 import { MpVirtualListComponentMixin } from '../../modules/mixin';
-import { selectAllBoundingClientRect, selectBoundingClientRect } from 'cross-mp-power';
+import { getApiVarName, nextTick, selectAllBoundingClientRect, selectBoundingClientRect } from 'cross-mp-power';
+
+const NeedDelayQuery = typeof BUILD_TARGET === 'string' ? BUILD_TARGET !== 'wx' : getApiVarName() !== 'wx';
 
 class MpDynamicSizeVirtualListComponent<T = any> extends MpComponent<
     MpVirtualListComponentData,
@@ -16,6 +18,7 @@ class MpDynamicSizeVirtualListComponent<T = any> extends MpComponent<
     selfHash: string;
     queryHash = 0;
     querying: boolean;
+    querySizeMaybeInaccurateIndex: Record<string, 1>;
     createSelectorQuery: (...args: any[]) => any;
     $mx = {
         adapter: new MpVirtualListComponentMixin<T, DynamicSizeVirtualListConfig, DynamicSizeVirtualList>({
@@ -34,7 +37,20 @@ class MpDynamicSizeVirtualListComponent<T = any> extends MpComponent<
                 };
             },
             onRenderDone: (ctx: MpDynamicSizeVirtualListComponent<T>) => {
-                ctx.queryListElementsSize();
+                if (NeedDelayQuery) {
+                    nextTick(() => {
+                        ctx.queryListElementsSize();
+                    });
+                } else {
+                    ctx.queryListElementsSize();
+                }
+            },
+            onItemSizeMayBeChange(ctx: MpDynamicSizeVirtualListComponent<T>, index) {
+                if (index === 'all') {
+                    ctx.querySizeMaybeInaccurateIndex = {};
+                    return;
+                }
+                delete ctx.querySizeMaybeInaccurateIndex[index];
             }
         })
     };
@@ -49,6 +65,9 @@ class MpDynamicSizeVirtualListComponent<T = any> extends MpComponent<
             }
         }
     };
+    created() {
+        this.querySizeMaybeInaccurateIndex = {};
+    }
     setItemSizeByKey(itemKey: string | number | T, size: number) {
         this.$mx.adapter.$vl.setItemSizeByKey(itemKey, size, false);
         this.$mx.adapter.syncVlList();
@@ -97,13 +116,21 @@ class MpDynamicSizeVirtualListComponent<T = any> extends MpComponent<
             .then((rects) => {
                 this.querying = false;
                 const sizeProp = this.$mx.adapter.data.scrollX && !this.$mx.adapter.data.scrollY ? 'width' : 'height';
+                let needReQuery;
                 if (rects) {
                     rects.forEach((rect) => {
                         const index = rect.dataset.index;
-                        this.setItemSizeByIndex(parseInt(index), rect[sizeProp]);
+                        const size = rect[sizeProp];
+                        if (size > this.data.itemMinSize || index in this.querySizeMaybeInaccurateIndex) {
+                            this.setItemSizeByIndex(parseInt(index), size);
+                        } else {
+                            // 标记这个可能查的不多，下次需要重查
+                            this.querySizeMaybeInaccurateIndex[index] = 1;
+                            needReQuery = true;
+                        }
                     });
                 }
-                if (currentHash !== this.queryHash) {
+                if (currentHash !== this.queryHash || needReQuery) {
                     this.queryListElementsSize();
                 } else {
                     this.queryHash = 0;

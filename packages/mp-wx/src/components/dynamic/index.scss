@@ -9,10 +9,16 @@
     .vl-list {
         height: 100%;
     }
+    .vl-list {
+        min-width: 100%;
+    }
 }
 .scroll-y {
     .vl-item {
         width: 100%;
+    }
+    .vl-list {
+        min-height: 100%;
     }
 }
 .vl-list {
