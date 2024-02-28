@@ -39,13 +39,14 @@ export class RegularSizeVirtualList<T = any> extends BaseVirtualList<T> {
             this.expectStartBufferCount = this.config.startBufferCount;
         } else {
             this.expectStartBufferCount =
-                this.viewportShowListCount <= 0 ? 0 : Math.ceil(this.viewportShowListCount / 2);
+                this.viewportShowListCount <= 0 ? 0 : (this.config.bufferMultiple || 1) * this.viewportShowListCount;
         }
 
         if (typeof this.config.endBufferCount === 'number') {
             this.expectEndBufferCount = this.config.endBufferCount;
         } else {
-            this.expectEndBufferCount = this.viewportShowListCount <= 0 ? 0 : Math.ceil(this.viewportShowListCount / 2);
+            this.expectEndBufferCount =
+                this.viewportShowListCount <= 0 ? 0 : (this.config.bufferMultiple || 1) * this.viewportShowListCount;
         }
     }
 

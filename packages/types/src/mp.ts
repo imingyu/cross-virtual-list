@@ -5,6 +5,8 @@ export interface MpVirtualListComponentProps {
     scrollX: boolean;
     /** 允许竖向滚动 */
     scrollY: boolean;
+    /** 前后缓冲区的数据量是视口列表数量的几倍？ */
+    bufferMultiple?: number;
     /** 容器尺寸 */
     containerSize?: number;
     /** 容器尺寸HASH值，当值变化时将触发显示列表索引范围的重新计算 */

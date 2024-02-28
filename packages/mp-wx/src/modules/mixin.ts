@@ -35,6 +35,10 @@ export class MpVirtualListComponentMixin<
             type: Boolean,
             value: true
         },
+        bufferMultiple: {
+            type: Number,
+            value: 2
+        },
         contentStyle: String,
         containerSize: {
             type: Number,
@@ -86,14 +90,22 @@ export class MpVirtualListComponentMixin<
 
     created() {
         this.selfHash = uuid();
-        const config = this.MixinConfig.adapterConfigGetter(this);
         // eslint-disable-next-line new-cap
-        this.$vl = new this.MixinConfig.adapter(config as C);
+        this.$vl = new this.MixinConfig.adapter(this.getFinalConfig());
         this.computeContainerSize();
         this.checkReady();
     }
     attached() {
         this.isAttached = true;
+    }
+    getFinalConfig(): C {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        return {
+            ...this.MixinConfig.adapterConfigGetter(this),
+            bufferMultiple: this.data.bufferMultiple || 1,
+            viewportSize: this.computedContainerSizeValue || 0,
+            itemKeyField: this.data.itemKeyField
+        } as C;
     }
     emitInteract(e) {
         this.triggerEvent('interact', e.detail);
@@ -200,14 +212,7 @@ export class MpVirtualListComponentMixin<
     updateVlConfig(sync = true) {
         const change = (this.$vl.config.viewportSize || 0) !== (this.computedContainerSizeValue || 0);
         change && this.$vl.resetScrollSize();
-        this.$vl.setConfig(
-            {
-                ...this.MixinConfig.adapterConfigGetter(this),
-                viewportSize: this.computedContainerSizeValue || 0,
-                itemKeyField: this.data.itemKeyField
-            },
-            true
-        );
+        this.$vl.setConfig(this.getFinalConfig(), true);
         this.checkReady();
         sync && this.syncVlList();
     }

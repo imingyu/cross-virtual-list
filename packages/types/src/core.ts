@@ -7,6 +7,8 @@ export interface BaseVirtualListConfig {
     startBufferCount?: number;
     /** 后置缓冲区预备展示的列表项数量 */
     endBufferCount?: number;
+    /** 前后缓冲区的数据量是视口列表数量的几倍？优先级小于startBufferCount和endBufferCount */
+    bufferMultiple?: number;
 }
 
 export interface RegularSizeVirtualListConfig extends BaseVirtualListConfig {
