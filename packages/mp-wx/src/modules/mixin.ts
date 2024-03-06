@@ -27,6 +27,9 @@ export class MpVirtualListComponentMixin<
     syncHash = 0;
 
     properties: MpComponentProperties<MpVirtualListComponentProps, MpVirtualListComponentMixin<T>> = {
+        createSelectorQueryConfig: {
+            type: Object
+        },
         scrollX: {
             type: Boolean,
             value: false
@@ -196,16 +199,17 @@ export class MpVirtualListComponentMixin<
             return this.containerSizeComputePromise;
         }
         if (!this.containerSizeComputePromise) {
-            this.containerSizeComputePromise = selectBoundingClientRect('.vl-container', this, undefined, 3).then(
-                (res) => {
-                    this.computedContainerSizeValue =
-                        res[
-                            this.data.scrollY ? 'height' : this.data.scrollX && !this.data.scrollY ? 'height' : 'width'
-                        ];
-                    this.updateVlConfig(false);
-                    return this.computedContainerSizeValue;
-                }
-            );
+            this.containerSizeComputePromise = selectBoundingClientRect({
+                selector: '.vl-container',
+                ctx: this,
+                retryCount: 3,
+                createSelectorQueryConfig: this.data.createSelectorQueryConfig
+            }).then((res) => {
+                this.computedContainerSizeValue =
+                    res[this.data.scrollY ? 'height' : this.data.scrollX && !this.data.scrollY ? 'height' : 'width'];
+                this.updateVlConfig(false);
+                return this.computedContainerSizeValue;
+            });
         }
         return this.containerSizeComputePromise;
     }

@@ -16,6 +16,8 @@ export interface MpVirtualListComponentProps {
     contentStyle?: string;
     /** 外部使用虚拟列表时传入的状态数据，此数据将原封不动的继续传给item组件，可以做到通信的目的 */
     state?: any;
+    /** 调用createSelectorQuery api时传递的参数 */
+    createSelectorQueryConfig?: any;
 }
 
 export interface MpVirtualListComponentData<T = any> {

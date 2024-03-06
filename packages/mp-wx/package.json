@@ -9,7 +9,7 @@
     },
     "dependencies": {
         "@cross-virtual-list/core": "workspace:*",
-        "cross-mp-power": "0.1.7",
+        "cross-mp-power": "0.2.0",
         "typescript-mp-component": "0.1.1"
     },
     "devDependencies": {

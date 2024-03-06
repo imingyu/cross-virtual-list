@@ -77,7 +77,12 @@ class MpDynamicSizeVirtualListComponent<T = any> extends MpComponent<
         this.$mx.adapter.syncVlList();
     }
     reQueryItemElementSizeByIndex(itemIndex: number) {
-        selectBoundingClientRect(`.vl-hash-${this.selfHash}.vl-index-${itemIndex}`, this, undefined, 2)
+        selectBoundingClientRect({
+            selector: `.vl-hash-${this.selfHash}.vl-index-${itemIndex}`,
+            ctx: this,
+            retryCount: 2,
+            createSelectorQueryConfig: this.$mx.adapter.data.createSelectorQueryConfig
+        })
             .then((rect) => {
                 const sizeProp = this.$mx.adapter.data.scrollX && !this.$mx.adapter.data.scrollY ? 'width' : 'height';
                 this.setItemSizeByIndex(itemIndex, rect[sizeProp]);
@@ -111,7 +116,11 @@ class MpDynamicSizeVirtualListComponent<T = any> extends MpComponent<
             return;
         }
         this.querying = true;
-        selectAllBoundingClientRect(`.vl-hash-${this.selfHash}`, this)
+        selectAllBoundingClientRect({
+            selector: `.vl-hash-${this.selfHash}`,
+            ctx: this,
+            createSelectorQueryConfig: this.$mx.adapter.data.createSelectorQueryConfig
+        })
             .catch(() => {})
             .then((rects) => {
                 this.querying = false;
