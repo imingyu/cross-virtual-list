@@ -1,6 +1,6 @@
 {
     "name": "cross-virtual-list",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "description": "跨平台、跨框架的虚拟列表组件",
     "repository": {
         "type": "git",
