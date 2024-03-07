@@ -188,7 +188,7 @@ export class MpVirtualListComponentMixin<
             }
         }
     }
-    computeContainerSize(): Promise<number> {
+    computeContainerSize(sizeNailRetry?: boolean): Promise<number> {
         if (this.computedContainerSizeValue) {
             return this.containerSizeComputePromise as Promise<number>;
         }
@@ -207,6 +207,13 @@ export class MpVirtualListComponentMixin<
             }).then((res) => {
                 this.computedContainerSizeValue =
                     res[this.data.scrollY ? 'height' : this.data.scrollX && !this.data.scrollY ? 'height' : 'width'];
+                if (!this.computedContainerSizeValue && !sizeNailRetry) {
+                    delete this.computedContainerSizeValue;
+                    delete this.containerSizeComputePromise;
+                    return new Promise((resolve) => {
+                        setTimeout(resolve, 200);
+                    }).then(() => this.computeContainerSize(true));
+                }
                 this.updateVlConfig(false);
                 return this.computedContainerSizeValue;
             });
