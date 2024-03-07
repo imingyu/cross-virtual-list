@@ -2,7 +2,7 @@
     scroll-y="{{ scrollX && !scrollY ? false : true }}" scroll-x="{{ scrollX && !scrollY ? true : false }}"
     bind:scroll="onScroll">
     <view class="vl-list" style="{{contentStyle}};{{ elListStyle }}">
-        <view wx:for="{{ list }}" wx:key="key"
+        <view wx:for="{{ list }}" wx:key="key" id="vl{{selfHash}}-{{item.index}}"
             class="vl-item vl-hash-{{selfHash}} vl-key-{{item.key}} vl-index-{{item.index}}"
             style="transform: {{ scrollX && !scrollY ? 'translateX' : 'translateY' }}({{ item.offset }}px);{{ scrollX && !scrollY ? 'min-width' : 'min-height' }}:{{itemMinSize?(itemMinSize+'px'):null}};"
             data-index="{{item.index}}">

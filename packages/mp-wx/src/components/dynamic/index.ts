@@ -78,7 +78,7 @@ class MpDynamicSizeVirtualListComponent<T = any> extends MpComponent<
     }
     reQueryItemElementSizeByIndex(itemIndex: number) {
         selectBoundingClientRect({
-            selector: `.vl-hash-${this.selfHash}.vl-index-${itemIndex}`,
+            selector: `#vl${this.selfHash}-${itemIndex}`,
             ctx: this,
             retryCount: 2,
             createSelectorQueryConfig: this.$mx.adapter.data.createSelectorQueryConfig
